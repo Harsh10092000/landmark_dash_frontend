@@ -41,22 +41,8 @@ import DeleteDialog from "../../components/dialogComp/DeleteDialog";
 import PropertyStatusDialog from "../../components/dialogComp/PropertyStatusDialog";
 import Loader from "../../components/loader/Loader";
 
-// const SkeletonRow = () => (
-//   <div className="div-table-row">
-//     {[...Array(9)].map((_, index) => (
-//       <div key={index} className="div-table-cell">
-//         <div className="skeleton" style={{
-//           height: '20px',
-//           background: '#e0e0e0',
-//           borderRadius: '4px',
-//           animation: 'pulse 1.5s ease-in-out infinite'
-//         }} />
-//       </div>
-//     ))}
-//   </div>
-// );
 
-const ActionDropdownMenu = [
+const ActionDropdownMenu1 = [
   { to: "/viewProperty", title: "View property", icon: <ViewIcon /> },
   { to: "/editProperty", title: "Edit property", icon: <EditIcon /> },
   { to: "/editProperty", title: "Active", icon: <ListAgainIcon /> },
@@ -64,30 +50,17 @@ const ActionDropdownMenu = [
   { to: "/editProperty", title: "Delete", icon: <DeleteIcon /> },
 ];
 
-// const ActionBtnDropdown = ({ pro_id, selectedItem, onAction }) => {
-//   return (
-//     <div className="action-dropdown css-1dhh8jv">
-//       <span class="css-1egvoax"></span>
-//       {ActionDropdownMenu.map((item, index) => (
-//         <div
-//           className={`action-dropdown-item ${
-//             selectedItem === item.title ? "selected-action" : ""
-//           }`}
-//           //onClick={() => onAction(pro_id, "view")}
-//           onClick={() => setSelectedItem(item.title)}
-//         >
-//           <span className="action-dropdown-icon">{item.icon}</span> {item.title}
-//         </div>
-//       ))}
-//     </div>
-//   );
-// };
+const ActionDropdownMenu2 = [
+  { to: "/editProperty", title: "Edit property", icon: <EditIcon /> },
+  { to: "/editProperty", title: "Delete", icon: <DeleteIcon /> },
+];
+
 
 const ActionBtnDropdown = ({ pro_url, pro_id, selectedItem, onAction }) => {
   return (
     <div className="action-dropdown css-1dhh8jv">
       <span className="css-1egvoax"></span>
-      {ActionDropdownMenu.map((item) => (
+      {(pro_url == null ? ActionDropdownMenu2 : ActionDropdownMenu1).map((item) => (
         <div
           key={item.title}
           className={`action-dropdown-item ${
@@ -272,7 +245,7 @@ const Dashboard = () => {
     },
     { value: "Price", customClass: "mobile-hidden-field" },
     { value: "Posted On", customClass: "div-table-cell-date" },
-    { value: "Expired On", customClass: "div-table-cell-date" },
+    // { value: "Expired On", customClass: "div-table-cell-date" },
     // { value: "Responses and Views" },
     { value: "Status", customClass: "div-table-cell-action-btn" },
     { value: "Actions", customClass: "div-table-cell-action-btn" },
@@ -586,21 +559,22 @@ const Dashboard = () => {
                 <div className="div-table-cell">{item.pro_modified_id}</div>
                 <div className="div-table-cell mobile-hidden-field">
                   {PropertyTypeFunction(item.pro_type)}
+                  <span className="d-block pro-slug-space pl-1" >{PropertyTypeFunction(item.pro_sub_cat.split(",")[0])}</span>
                 </div>
                 <div className="div-table-cell div-table-cell-pro_ad_type mobile-hidden-field">
                   {item.pro_ad_type}
                 </div>
                 <div className="div-table-cell mobile-hidden-field">
-                  {ShowPrice(item.pro_ad_type, item.pro_amt)}
+                  {item.pro_amt ? ShowPrice(item.pro_ad_type, item.pro_amt) : "-"}
                 </div>
                 <div className="div-table-cell div-table-cell-date">
                   {DateFormat(item.pro_creation_date)}
                 </div>
-                <div className="div-table-cell div-table-cell-date">
+                {/* <div className="div-table-cell div-table-cell-date">
                   {DateFormat(item.pro_renew_date)}
-                </div>
+                </div> */}
                 <div className="div-table-cell div-table-cell-action-btn">
-                  <PropertyCurrentStatus val={item.pro_listed} />
+                  <PropertyCurrentStatus val={item.pro_listed} pro_url={item.pro_url} />
                 </div>
 
                 <div
@@ -631,7 +605,10 @@ const Dashboard = () => {
                   )}
                 </div>
 
-                <div className="div-table-cell">Remarks</div>
+                <div className="div-table-cell">
+                  {item.pro_url == null ? "Complete the listing to publish your property." : 
+                  "-"}
+                </div>
               </div>
             ))
           ) : (

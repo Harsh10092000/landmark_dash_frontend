@@ -55,10 +55,25 @@ const PropertyTypeFunction = (val) => {
     return  moment(date).format("DD MMM, YY");
   }
 
-  export const PropertyCurrentStatus = ({ val }) => {
+  export const PropertyCurrentStatus = ({ val, pro_url }) => {
     return (
+      // <div>
+      //   {val === 1 ? 
+      //       <div className='property-status-wrapper property-status-green' >Listed</div> : 
+      //       val === 0 ?
+      //       <div className='property-status-wrapper property-status-gray' >Delisted</div> :
+      //       val === 3 ?
+      //       <div className='property-status-wrapper property-status-orange' >Expiring</div> :
+      //       val === 4 ?
+      //       <div className='property-status-wrapper property-status-red' >Expired</div> :
+      //       val === 5 ?
+      //       <div className='property-status-wrapper property-status-blue' >Sold Out</div> : ""
+      //   }
+      // </div>
       <div>
-        {val === 1 ? 
+        {pro_url == null ? 
+          <div className='property-status-wrapper property-status-orange' >Pending</div> :
+          val === 1 ? 
             <div className='property-status-wrapper property-status-green' >Listed</div> : 
             val === 0 ?
             <div className='property-status-wrapper property-status-gray' >Delisted</div> :

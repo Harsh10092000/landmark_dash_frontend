@@ -1,39 +1,70 @@
 import React from 'react';
 
-const DashboardHeader = ({ userName = 'User', userEmail = 'user@example.com' , onToggleSidebar} ) => {
+const DashboardHeader = ({ userName = 'User', userEmail = 'user@example.com', onToggleSidebar }) => {
   return (
-
-  
-  <div className="d-flex justify-content-between align-items-center">
-    {console.log("onToggleSidebar : ", onToggleSidebar)}
-    <div className="d-flex align-items-center dashboard-header-inside-left">
-     <div className='sidebar-toggle-icon' onClick={onToggleSidebar}>
-     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--custom minimal__iconify__root css-18oi841" id="«rl»" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" opacity="0.4" d="M15.7798 4.5H5.2202C4.27169 4.5 3.5 5.06057 3.5 5.75042C3.5 6.43943 4.27169 7 5.2202 7H15.7798C16.7283 7 17.5 6.43943 17.5 5.75042C17.5 5.06054 16.7283 4.5 15.7798 4.5Z"></path> <path fill="currentColor" d="M18.7798 10.75H8.2202C7.27169 10.75 6.5 11.3106 6.5 12.0004C6.5 12.6894 7.27169 13.25 8.2202 13.25H18.7798C19.7283 13.25 20.5 12.6894 20.5 12.0004C20.5 11.3105 19.7283 10.75 18.7798 10.75Z"></path> <path fill="currentColor" d="M15.7798 17H5.2202C4.27169 17 3.5 17.5606 3.5 18.2504C3.5 18.9394 4.27169 19.5 5.2202 19.5H15.7798C16.7283 19.5 17.5 18.9394 17.5 18.2504C17.5 17.5606 16.7283 17 15.7798 17Z"></path></svg>
-    </div>
-      <div className="dashboard-heading">
-        <div>Dashboard</div>
-      </div>
-    </div>
-    <div className="d-flex align-items-center dashboard-header-inside-right">
-      <div className="user-icon" aria-label="User profile">
-        {/* <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="currentColor"
+    <div
+      className="dashboard-header-modern d-flex justify-content-between align-items-center"
+      style={{
+        background: '#fff',
+        borderRadius: '16px',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+        padding: '18px 32px',
+        margin: '18px 0',
+        minHeight: 72,
+        position: 'relative',
+        zIndex: 1100,
+      }}
+    >
+      <div className="d-flex align-items-center dashboard-header-inside-left gap-3">
+        <div
+          className="sidebar-toggle-icon d-flex align-items-center justify-content-center"
+          onClick={onToggleSidebar}
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            background: '#f5f7fa',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+            cursor: 'pointer',
+            marginRight: 18,
+          }}
         >
-          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-        </svg> */}
-        <img src='https://pub-c5e31b5cdafb419fb247a8ac2e78df7a.r2.dev/public/assets/images/mock/avatar/avatar-25.webp' />
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" opacity="0.4" d="M15.7798 4.5H5.2202C4.27169 4.5 3.5 5.06057 3.5 5.75042C3.5 6.43943 4.27169 7 5.2202 7H15.7798C16.7283 7 17.5 6.43943 17.5 5.75042C17.5 5.06054 16.7283 4.5 15.7798 4.5Z"></path>
+            <path fill="currentColor" d="M18.7798 10.75H8.2202C7.27169 10.75 6.5 11.3106 6.5 12.0004C6.5 12.6894 7.27169 13.25 8.2202 13.25H18.7798C19.7283 13.25 20.5 12.6894 20.5 12.0004C20.5 11.3105 19.7283 10.75 18.7798 10.75Z"></path>
+            <path fill="currentColor" d="M15.7798 17H5.2202C4.27169 17 3.5 17.5606 3.5 18.2504C3.5 18.9394 4.27169 19.5 5.2202 19.5H15.7798C16.7283 19.5 17.5 18.9394 17.5 18.2504C17.5 17.5606 16.7283 17 15.7798 17Z"></path>
+          </svg>
+        </div>
+        <div className="dashboard-heading" style={{ fontWeight: 700, fontSize: 28, color: '#222' }}>
+          Dashboard
+        </div>
       </div>
-      <div className="ms-2">
-        <div>{userName}</div>
-        <div>{userEmail}</div>
+      <div className="d-flex align-items-center dashboard-header-inside-right gap-3">
+        <div
+          className="user-icon d-flex align-items-center justify-content-center"
+          aria-label="User profile"
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: '50%',
+            overflow: 'hidden',
+            background: '#f5f7fa',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+          }}
+        >
+          <img
+            src='https://pub-c5e31b5cdafb419fb247a8ac2e78df7a.r2.dev/public/assets/images/mock/avatar/avatar-25.webp'
+            alt="User avatar"
+            style={{ width: 44, height: 44, borderRadius: '50%' }}
+          />
+        </div>
+        <div className="ms-2" style={{ lineHeight: 1.2 }}>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#222' }}>{userName}</div>
+          <div style={{ fontSize: 14, color: '#888' }}>{userEmail}</div>
+        </div>
       </div>
     </div>
-  </div>
-  )
+  );
 };
 
 export default DashboardHeader;

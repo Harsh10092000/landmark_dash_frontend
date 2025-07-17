@@ -53,7 +53,9 @@ const Index = memo(() => {
   }, [isSidebarOpen]);
 
   return (
-    <div className="container-fluid">
+    <div 
+    //className="container-fluid"
+    >
       <div className="dashboard-wrapper">
         <DashboardSideBar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         <div className={`sidebar-overlay ${isSidebarOpen ? 'sidebar-overlay-active' : ''}`} onClick={toggleSidebar} />

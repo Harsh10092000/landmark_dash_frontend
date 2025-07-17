@@ -12,7 +12,7 @@
     transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     border-radius: 16px;
-    margin-top: 50px;
+    margin-top: 10px;
     margin-bottom: 50px;
 }
 
@@ -125,6 +125,9 @@
     width: 230px;  
     overflow-y: auto;
     height: calc(100vh - 68px) ;
+    position: sticky;
+    top: 68px;
+    z-index: 1000;
 }
 
 .dashboard-wrapper .sidebar-logo {
@@ -135,12 +138,18 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+
+    position: sticky;
+    top: 0px
 }
 
 .dashboard-wrapper .sidebar-logo img {
     width: 55px;
 }
 
+.menu-link-modern {
+    text-decoration: none;
+}
 
 .dashboard-right-header {
     padding-left: 15px;
@@ -228,6 +237,7 @@
 
 .dashboardSidebar-inside {
 padding-right: 10px;
+padding-left: 10px;
 }
 
 .dashboardSidebar-inside .dashboardSidebar-menu-inside  {
