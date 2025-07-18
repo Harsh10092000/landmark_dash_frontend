@@ -2,17 +2,28 @@
     width: 100%;
     border-collapse: collapse;
     background-color: #fff;
-    box-shadow: 0 1px 3px #00000033;
-    /* overflow-x: auto;  */
-    /* height: calc(100vh - 270px);
-    overflow-y: scroll; */
-   
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
   }
   
   .div-table-header {
     display: flex;
-    background-color: #f4f6f8;
-    font-weight: 500 !important;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    font-weight: 700 !important;
+    border-bottom: 1px solid #cbd5e1;
+    position: relative;
+  }
+
+  .div-table-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #94a3b8 50%, transparent 100%);
   }
   
   .div-table-body {
@@ -22,6 +33,9 @@
   
   .div-table-row {
     display: flex;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border-left: 3px solid transparent;
   }
 
   .div-table-row-block {
@@ -30,25 +44,75 @@
  
   .div-table-cell {
     flex: 1;
-    padding: 16px;
+    padding: 20px 24px;
     text-align: left;
-    word-wrap: break-word; /* Wraps long text like addresses */
-    min-width: 0; /* Prevents overflow */
-    color: #637381 !important;
+    word-wrap: break-word;
+    min-width: 0;
+    color: #475569 !important;
     font-size: 14px;
-    
+    font-weight: 500;
+    position: relative;
   }
   
   .div-table-body .div-table-cell {
-    color: #1C252E !important;
-    line-height: 1.57143 !important;
-    border-bottom: 1px solid rgba(145 158 171 / 0.2);
-    border-bottom-style: dashed;
+    color: #374151 !important;
+    line-height: 1.6 !important;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 24px 24px;
+    transition: all 0.2s ease;
   }
   
+  .div-table-header .div-table-cell {
+    color: #475569 !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 24px 24px 22px 24px;
+    position: relative;
+  }
+
+  .div-table-header .div-table-cell::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 60%;
+    background: linear-gradient(180deg, transparent 0%, #94a3b8 50%, transparent 100%);
+  }
+
+  .div-table-header .div-table-cell:last-child::after {
+    display: none;
+  }
+
+  .sortable-header {
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .sortable-header:hover {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    transform: translateY(-1px);
+  }
+
+  .sortable-header:active {
+    transform: translateY(0px);
+  }
+
+  .div-table-header .div-table-cell svg {
+    transition: all 0.2s ease;
+  }
+
+  .sortable-header:hover svg {
+    opacity: 1 !important;
+  }
 
   .div-table-cell:first-child {
-    flex: 0.9; /* Narrower ID column */
+    flex: 0.9;
   }
   
   .div-table-cell-pro_ad_type {
@@ -69,7 +133,38 @@
   
   /* Hover effect */
   .div-table-row:hover {
-    background-color: #f5f5f5;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    z-index: 1;
+  }
+
+  .div-table-row:nth-child(even) {
+    background-color: #fafbfc;
+  }
+
+  .div-table-row:nth-child(even):hover {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  }
+
+  .div-table-row:last-child .div-table-cell {
+    border-bottom: none;
+  }
+
+  .div-table-row:hover .div-table-cell {
+    color: #111827 !important;
+    font-weight: 600;
+  }
+
+  .div-table-row {
+    display: flex;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border-left: 3px solid transparent;
+  }
+
+  .div-table-row:hover {
+    border-left: 3px solid #64748b;
   }
 
   .action-btn-wrapper {
@@ -185,7 +280,8 @@ background-color: rgba(145 158 171 / 0.16);;
 
 
   .property-status-wrapper {
-    padding: 0px calc(0.75 * 6px);
+    /* padding: 0px calc(0.75 * 6px); */
+    padding: 4px 12px;
     border-radius: 6px;
     transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
     cursor: default;

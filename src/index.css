@@ -2,6 +2,14 @@
     background-color: #FFFFFF ;
 } */
 
+
+
+:root {
+    --background-color: #f1f1fb;
+    --background-color-selected: #5f5fe9;
+}
+
+
 .dashboard-main-wrapper {
     background-color: #FFFFFF;
     color: #1C252E;
@@ -357,3 +365,234 @@ padding-left: 10px;
     top: 50%;
     z-index: 3;
   }
+
+/* MyProperty.jsx custom styles */
+
+.myproperty-section {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px 0 rgba(31,38,135,0.07);
+  margin-bottom: 32px;
+  padding: 32px 24px 24px 24px;
+
+  border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+    border-radius: 16px;
+    overflow: hidden;
+
+}
+
+.myproperty-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1C252E;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.myproperty-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.myproperty-pill {
+  border-radius: 999px;
+  padding: 8px 22px;
+  font-size: 1rem;
+  font-weight: 500;
+  border: 1.5px solid #e0e0e0;
+  background: #f7faff;
+  color: #1C252E;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.myproperty-pill.selected {
+    background: #e2e8f0;
+    border-color: #b2bac5;
+    box-shadow: 0 2px 8px #1976d220;
+    color: #374151;
+  }
+  
+
+.myproperty-pill:hover:not(.selected) {
+  color: #374151;
+  border-color: #b2bac5;
+}
+.myproperty-pill:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.myproperty-image-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.myproperty-image-preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.myproperty-image-preview {
+  border-radius: 8px;
+  box-shadow: 0 1px 6px 0 rgba(31,38,135,0.10);
+  overflow: hidden;
+  width: 120px;
+  height: 80px;
+  position: relative;
+  background: #f7faff;
+}
+.myproperty-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.myproperty-image-remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  color: #ec161e;
+  font-size: 1.1rem;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px #0001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.myproperty-checkbox-row {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.myproperty-textarea {
+  width: 100%;
+  min-height: 80px;
+  border-radius: 8px;
+  border: 1.5px solid #e0e0e0;
+  padding: 12px;
+  font-size: 1rem;
+  background: #f7faff;
+  margin-bottom: 18px;
+  resize: vertical;
+}
+
+.myproperty-label {
+  font-weight: 600;
+  color:  black;
+  margin-bottom: 9px;
+  display: block;
+}
+
+.myproperty-input-row {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.myproperty-input-row .MuiTextField-root {
+  flex: 1 1 220px;
+}
+
+
+.inside-section-wrapper {
+    margin-bottom: 18px;
+}
+
+
+@media (max-width: 700px) {
+  .myproperty-section {
+    padding: 18px 6px 12px 6px;
+  }
+  .myproperty-input-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .myproperty-image-preview {
+    width: 90px;
+    height: 60px;
+  }
+}
+
+.main-wrapper {
+    margin: 0 30px;
+}
+
+.myproperty-section-title-minimal {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: blacl;
+  
+  padding-left: 14px;
+  margin-bottom: 18px;
+  letter-spacing: 0.5px;
+  background: none;
+  border-radius: 0;
+  display: block;
+  border: 1px solid #b2bac559;
+  border-left: 3.5px solid #1C252E;
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+
+.myproperty-location-autofill-row {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.myproperty-location-autofill-row > .myproperty-location-input {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.myproperty-location-input {
+  width: 100%;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  padding: 10px 14px;
+  font-size: 1rem;
+  color: #1C252E;
+  background: #f7faff;
+  margin-bottom: 0;
+  transition: border 0.18s, box-shadow 0.18s;
+  box-shadow: 0 1px 4px #00000008;
+}
+.myproperty-location-input:focus {
+  border-color: #1976d2;
+  outline: none;
+  background: #fff;
+  box-shadow: 0 2px 8px #1976d220;
+}
+
+.myproperty-location-error {
+  color: #ec161e;
+  font-size: 0.97rem;
+  margin-top: 4px;
+  margin-bottom: 0;
+  padding-left: 2px;
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .myproperty-location-autofill-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

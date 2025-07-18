@@ -222,34 +222,104 @@ const Dashboard = () => {
       });
   }, [data, filter, searchValue]);
 
-  const records = filteredData.slice(firstIndex, lastIndex);
   const nPages = Math.ceil(filteredData.length / recordsPerPage);
 
+  // Sorting state
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+
+  // Sort data function
+  const sortData = (data, field, direction) => {
+    if (!field) return data;
+    
+    return [...data].sort((a, b) => {
+      let aValue = a[field];
+      let bValue = b[field];
+      
+      // Handle special cases
+      if (field === 'pro_modified_id') {
+        aValue = a.pro_modified_id;
+        bValue = b.pro_modified_id;
+      } else if (field === 'pro_type') {
+        aValue = PropertyTypeFunction(a.pro_type);
+        bValue = PropertyTypeFunction(b.pro_type);
+      } else if (field === 'pro_amt') {
+        aValue = a.pro_amt ? ShowPrice(a.pro_ad_type, a.pro_amt) : "-";
+        bValue = b.pro_amt ? ShowPrice(b.pro_ad_type, b.pro_amt) : "-";
+      } else if (field === 'pro_creation_date') {
+        aValue = DateFormat(a.pro_creation_date);
+        bValue = DateFormat(b.pro_creation_date);
+      } else if (field === 'pro_listed') {
+        aValue = a.pro_listed;
+        bValue = b.pro_listed;
+      }
+      
+      // Convert to string for comparison
+      aValue = String(aValue || '').toLowerCase();
+      bValue = String(bValue || '').toLowerCase();
+      
+      if (direction === 'asc') {
+        return aValue.localeCompare(bValue);
+      } else {
+        return bValue.localeCompare(aValue);
+      }
+    });
+  };
+
+  const sortedData = sortData(filteredData, sortField, sortDirection);
+  const records = sortedData.slice(firstIndex, lastIndex);
+
   const theadArray = [
-    // {
-    //   value: (
-    //     <Checkbox
-    //       size="small"
-    //       onClick={handleAllTypes}
-    //       checked={allSelected}
-    //       className="checkbox-alignment"
-    //     />
-    //   ),
-    // },
-    // { value: "Sno." },
-    { value: "Id" },
-    { value: "Property Type", customClass: "mobile-hidden-field" },
+    { 
+      value: "Id", 
+      sortable: true, 
+      field: 'pro_modified_id',
+      currentSort: sortField === 'pro_modified_id' ? sortDirection : null
+    },
+    { 
+      value: "Property Type", 
+      customClass: "mobile-hidden-field",
+      sortable: true,
+      field: 'pro_type',
+      currentSort: sortField === 'pro_type' ? sortDirection : null
+    },
     {
       value: "Sale/Rent",
       customClass: "div-table-cell-pro_ad_type mobile-hidden-field",
+      sortable: true,
+      field: 'pro_ad_type',
+      currentSort: sortField === 'pro_ad_type' ? sortDirection : null
     },
-    { value: "Price", customClass: "mobile-hidden-field" },
-    { value: "Posted On", customClass: "div-table-cell-date" },
-    // { value: "Expired On", customClass: "div-table-cell-date" },
-    // { value: "Responses and Views" },
-    { value: "Status", customClass: "div-table-cell-action-btn" },
-    { value: "Actions", customClass: "div-table-cell-action-btn" },
-    { value: "Remarks" },
+    { 
+      value: "Price", 
+      customClass: "mobile-hidden-field",
+      sortable: true,
+      field: 'pro_amt',
+      currentSort: sortField === 'pro_amt' ? sortDirection : null
+    },
+    { 
+      value: "Posted On", 
+      customClass: "div-table-cell-date",
+      sortable: true,
+      field: 'pro_creation_date',
+      currentSort: sortField === 'pro_creation_date' ? sortDirection : null
+    },
+    { 
+      value: "Status", 
+      customClass: "div-table-cell-action-btn",
+      sortable: true,
+      field: 'pro_listed',
+      currentSort: sortField === 'pro_listed' ? sortDirection : null
+    },
+    { 
+      value: "Actions", 
+      customClass: "div-table-cell-action-btn",
+      sortable: false
+    },
+    { 
+      value: "Remarks",
+      sortable: false
+    },
   ];
 
   useEffect(() => {
@@ -398,6 +468,16 @@ const Dashboard = () => {
 
   const handleOpenMarkNotSold = () => setOpenMarkNotSold(true);
   const handleCloseMarkNotSold = () => setOpenMarkNotSold(false);
+
+  // Sorting function
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
 
   return (
     <div className="dashboard-main-wrapper">
@@ -549,7 +629,7 @@ const Dashboard = () => {
       </div>
 
       <div className="div-table">
-        <TableHead theadArray={theadArray} />
+        <TableHead theadArray={theadArray} onSort={handleSort} />
         <div className="div-table-body">
           {!dataLoaded ? (
             <SkeletonTable count={recordsPerPage} />

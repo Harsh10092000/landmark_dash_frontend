@@ -2,6 +2,7 @@
 import { useContext } from 'react';
 import './App.css'
 import Dashboard from './pages/dashboard/Dashboard'
+import MyProperty from './pages/myProperty/MyProperty'
 import { AuthContext } from './context2/AuthContext';
 import {
   RouterProvider,
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
           </>
         ),
       },
+      {
+        path: "my-property/:propertyId",
+        element: <MyProperty />
+      }
 ]}
   
 ])
