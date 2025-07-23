@@ -8,11 +8,11 @@ export const AuthContextProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
     useEffect(() => {
     axios
-      .get('http://localhost:8010/api/session/getSessionData', {
+      .get(import.meta.env.VITE_BACKEND + '/api/session/getSessionData', {
         withCredentials: true,
       })
       .then((res) => {
-        console.log('AuthContext - Session data:', res.data);
+        console.log('AuthContext - Session data:', res.data); 
         setCurrentUser(res.data);
         
       })
