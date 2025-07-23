@@ -33,8 +33,8 @@ const TableHead = ({theadArray, onSort}) => {
   };
 
   return (
-    <div className="div-table-header">
-      {theadArray.map((item, index) => (
+      <div className="div-table-header">
+        {theadArray.map((item, index) => (
         <div 
           key={index}
           className={`div-table-cell ${item.customClass ? item.customClass : ""} ${item.sortable ? 'sortable-header' : ''}`}
@@ -46,8 +46,8 @@ const TableHead = ({theadArray, onSort}) => {
             {getSortIcon(item)}
           </div>
         </div>
-      ))}
-    </div>
+        ))}
+      </div>
   );
 };
 
