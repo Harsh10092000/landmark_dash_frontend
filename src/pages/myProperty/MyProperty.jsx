@@ -1,8 +1,55 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { LoadScript } from "@react-google-maps/api";
 import { Autocomplete } from "@react-google-maps/api";
+import axios from 'axios';  
+import { useParams, useNavigate } from 'react-router-dom';
+// Import Modal from MUI at the top
+import { Dialog, DialogContent, DialogActions, Button } from '@mui/material';
+
+import { IconCircleCheck, IconCircleCheckFilled } from '@tabler/icons-react';
+import NoData from '../../components/Table/NoData';
+import { AuthContext } from '../../context2/AuthContext';
+import SessionOutLoginAgain from '../../components/Table/SessionOutLoginAgain';
+
 const MyProperty = () => {
+    const { currentUser } = useContext(AuthContext);
+    const PINCODE_PATTERN = /^[1-9][0-9]{5}$/;
     const libraries = ["places"];
+    const { propertyId } = useParams();
+
+    // Show SessionOutLoginAgain if no user session
+    if (!currentUser) {
+        return (
+            <div style={{
+                boxShadow: "0 2px 10px 0 rgba(0, 0, 0, 0.1)",
+                border: "1px solid #dee2e6",
+                borderRadius: "13px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "70vh"
+            }}>
+                <SessionOutLoginAgain />
+            </div>
+        );
+    }
+
+    // Show NoData if no propertyId
+    if (propertyId == null) {
+        return (
+            <div style={{
+                boxShadow: "0 2px 10px 0 rgba(0, 0, 0, 0.1)",
+                border: "1px solid #dee2e6",
+                borderRadius: "13px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "70vh"
+            }}>
+                <NoData />
+            </div>
+        );
+    }
 
     const [activeTab, setActiveTab] = useState('Basic Details');
     const [formSubmit, setFormSubmit] = useState(false);
@@ -17,6 +64,23 @@ const MyProperty = () => {
         subDistrict: '',
         locality: '',
         completeAddress: '',
+        coverImage: '',
+        otherImages: [],
+        ownership: '',
+        authority: '',
+        otherRooms: [],
+        facilities: [],
+        amount: '',
+        negotiable: false,
+        rented: false,
+        corner: false,
+        desc: '',
+        age: '',
+        possession: '',
+        furnishing: '',
+        floor: 0,
+        openSides: 0,
+        parking: 0,
     });
 
     const tabs = [
@@ -109,56 +173,100 @@ const MyProperty = () => {
     else if (formData.propertyType === "Land") subTypes = proLandSubTypes;
     else if (formData.propertyType === "Commercial") subTypes = proCommercialSubTypes;
 
-    const autocompleteRef = useRef(null);
+    // Add location state at the top with other states
     const [location, setLocation] = useState("");
+    const autocompleteRef = useRef(null);
     const [showManualFields, setShowManualFields] = useState(false);
-
+    const [change, setChange] = useState(false);
+    // Update onLoad function
     const onLoad = (autocomplete) => {
         autocompleteRef.current = autocomplete;
     };
 
+    // Update onPlaceChanged function
     const onPlaceChanged = () => {
         if (autocompleteRef.current) {
             const place = autocompleteRef.current.getPlace();
             if (place && place.address_components) {
-                setShowManualFields(false);
-                setFormData({ ...formData, plotNumber: "" });
-                setFormData({ ...formData, state: "" });
-                setFormData({ ...formData, city: "" });
-                setFormData({ ...formData, subDistrict: "" });
-                setFormData({ ...formData, locality: "" });
-                setFormData({ ...formData, completeAddress: "" });
-                setFormData({ ...formData, pinCode: "" });
+                // Reset fields first
+                let newFormData = {
+                    ...formData,
+                    plotNumber: "",
+                    state: "",
+                    city: "",
+                    subDistrict: "",
+                    locality: "",
+                    completeAddress: "",
+                    pinCode: ""
+                };
 
+                // Map address components to fields
                 place.address_components.forEach((component) => {
-                    const type = component.types[0];
-                    console.log(place);
-                    switch (type) {
-                        case "street_number":
-                            setFormData({ ...formData, plotNumber: component.long_name });
-                            break;
-                        case "administrative_area_level_1":
-                            console.log(component.long_name)
-                            setFormData({ ...formData, state: component.long_name });
-                            break;
-                        case "administrative_area_level_3":
-                            setFormData({ ...formData, subDistrict: component.long_name });
-                            break;
-                        case "locality":
-                            setFormData({ ...formData, city: component.long_name });
-                            break;
-                        case "sublocality_level_1":
-                        case "neighborhood":
-                            setFormData({ ...formData, locality: component.long_name });
-                            break;
-                        case "postal_code":
-                            setFormData({ ...formData, pinCode: component.long_name });
-                            break;
-                        default:
-                            break;
+                    const types = component.types;
+
+                    // Plot Number / Street Number
+                    if (types.includes('street_number')) {
+                        newFormData.plotNumber = component.long_name;
+                    }
+                    // Street Name
+                    else if (types.includes('route')) {
+                        newFormData.plotNumber = newFormData.plotNumber 
+                            ? `${newFormData.plotNumber}, ${component.long_name}`
+                            : component.long_name;
+                    }
+                    // State
+                    else if (types.includes('administrative_area_level_1')) {
+                        newFormData.state = component.long_name;
+                    }
+                    // City
+                    else if (types.includes('locality')) {
+                        newFormData.city = component.long_name;
+                    }
+                    // Sub District
+                    else if (types.includes('administrative_area_level_2')) {
+                        newFormData.subDistrict = component.long_name;
+                    }
+                    // Locality/Area
+                    else if (types.includes('sublocality_level_1')) {
+                        newFormData.locality = component.long_name;
+                    }
+                    // Pin Code
+                    else if (types.includes('postal_code')) {
+                        newFormData.pinCode = component.long_name;
                     }
                 });
-                setFormData({ ...formData, completeAddress: place.formatted_address || "" });
+
+                // Set complete address
+                newFormData.completeAddress = place.formatted_address || "";
+
+                // If locality is not set but we have sublocality_level_2, use that
+                if (!newFormData.locality) {
+                    const sublocalityLevel2 = place.address_components.find(
+                        component => component.types.includes('sublocality_level_2')
+                    );
+                    if (sublocalityLevel2) {
+                        newFormData.locality = sublocalityLevel2.long_name;
+                    }
+                }
+
+                // If city is not set but we have administrative_area_level_3, use that
+                if (!newFormData.city) {
+                    const adminArea3 = place.address_components.find(
+                        component => component.types.includes('administrative_area_level_3')
+                    );
+                    if (adminArea3) {
+                        newFormData.city = adminArea3.long_name;
+                    }
+                }
+
+                // Update form data
+                setFormData(newFormData);
+
+                // Update location field
+                setLocation(place.formatted_address || "");
+
+                console.log("Place selected:", place);
+                console.log("Updated form data:", newFormData);
             }
         }
     };
@@ -196,6 +304,335 @@ const MyProperty = () => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+
+    useEffect(() => {
+        if (propertyId != null) {
+          axios
+            .get(
+              import.meta.env.VITE_BACKEND +
+                `/api/listing/getPropertyById/${propertyId}`
+            )
+            .then((res) => {
+                console.log("res.data : ", res.data[0]);
+              if (res.data === "failed") {
+                clearUser();
+              } else {
+                const formattedData = res.data.map((item, i) => ({
+                  ...item,
+                  serial_no: i + 1,
+                  pro_modified_id: `LM-${7600 + parseInt(item.pro_id)}`,
+                }));
+    
+              
+    
+                formData.adType = res.data[0].pro_ad_type;
+                formData.propertyType = res.data[0].pro_type;
+                // Fix propertySubType initialization
+                formData.propertySubType = res.data[0].pro_sub_cat;
+                formData.plotNumber = res.data[0].pro_plot_no;
+                formData.state = res.data[0].pro_state;
+                formData.city = res.data[0].pro_city;
+                formData.subDistrict = res.data[0].pro_sub_district;
+                formData.locality = res.data[0].pro_locality;
+                formData.completeAddress = res.data[0].pro_street;
+                formData.pinCode = res.data[0].pro_pincode;
+                formData.coverImage = res.data[0].pro_cover_image;
+                formData.otherImages = res.data[0].pro_other_images ? JSON.parse(res.data[0].pro_other_images) : [];
+                formData.ownership = res.data[0].pro_ownership_type;
+                formData.authority = res.data[0].pro_user_type;
+                formData.plotSize = res.data[0].pro_area_size;
+                formData.plotSizeUnit = res.data[0].pro_area_size_unit;
+                formData.roadWidth = res.data[0].pro_facing_road_width;
+                formData.roadWidthUnit = res.data[0].pro_facing_road_unit;
+                formData.plotWidth = res.data[0].pro_width;
+                formData.plotLength = res.data[0].pro_length;
+                formData.bedrooms = res.data[0].pro_bedroom;
+                formData.bathrooms = res.data[0].pro_washrooms;
+                formData.balcony = res.data[0].pro_balcony;
+                formData.facing = res.data[0].pro_facing;
+                formData.facingRoadUnit = res.data[0].pro_facing_road_unit;
+                formData.facingRoadWidth = res.data[0].pro_facing_road_width;
+                formData.facingRoadWidthUnit = res.data[0].pro_facing_road_unit;
+                formData.amount = res.data[0].pro_amt;
+                formData.negotiable = res.data[0].pro_negotiable === "Yes";
+                formData.rented = res.data[0].pro_rental_status === "Yes";
+                formData.corner = res.data[0].pro_corner === "Yes";
+                formData.desc = res.data[0].pro_desc;
+                formData.otherRooms = res.data[0].pro_other_rooms ? JSON.parse(res.data[0].pro_other_rooms) : [];
+                formData.facilities = res.data[0].pro_near_by_facilities ? JSON.parse(res.data[0].pro_near_by_facilities) : [];
+                formData.authority = res.data[0].pro_approval;
+                formData.age = res.data[0].pro_age || '';
+                formData.possession = res.data[0].pro_possession || '';
+                formData.furnishing = res.data[0].pro_furnishing || '';
+                formData.floor = res.data[0].pro_floor || 0;
+                formData.openSides = res.data[0].pro_open_sides || 0;
+                formData.parking = res.data[0].pro_parking || 0;
+                setFormSubmit(true);
+                //setChange(!change);
+              }
+            });
+        }
+      }, [change, propertyId]);
+
+      console.log("formData : ", formData);
+
+    const MAX_OTHER_IMAGES = 10;
+    const MAX_SIZE = 1000000; // 1MB
+    const MIN_SIZE = 10000;   // 10KB
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+
+    // Simplify price format function
+    const priceFormat = (val) => {
+        if (!val) return "e.g. ₹ 10,00,000";
+        let num = parseInt(val.toString().replace(/[^0-9]/g, ""));
+        if (!num) return "e.g. ₹ 10,00,000";
+        
+        // Format in Indian currency style
+        const formatted = num.toLocaleString('en-IN');
+        
+        // Add denomination
+        let denomination = '';
+        if (num >= 10000000) {
+            denomination = ` (${(num / 10000000).toFixed(2)} Crore)`;
+        } else if (num >= 100000) {
+            denomination = ` (${(num / 100000).toFixed(2)} Lac)`;
+        } else if (num >= 1000) {
+            denomination = ` (${(num / 1000).toFixed(2)} Thousand)`;
+        }
+        
+        return `₹ ${formatted}${denomination}`;
+    };
+
+    // Add this helper function at the top with other constants
+    const validateImage = (file) => {
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            return "Invalid format (only JPG, PNG, WEBP)";
+        }
+        if (file.size > MAX_SIZE) {
+            return "File too large (max 1MB)";
+        }
+        if (file.size < MIN_SIZE) {
+            return "File too small (min 10KB)";
+        }
+        return "";
+    };
+
+    const navigate = useNavigate();
+
+    // Add state for popup at the top with other states
+    const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+
+    // Replace the SuccessPopup component with this new Modal component
+    const SuccessModal = ({ open, onClose }) => {
+        return (
+            <Dialog 
+                open={open} 
+                onClose={onClose}
+                maxWidth="xs"
+                fullWidth
+                PaperProps={{
+                    style: {
+                        borderRadius: '8px',
+                        padding: '24px'
+                    }
+                }}
+            >
+                <DialogContent style={{
+                    textAlign: 'center',
+                    padding: '0'
+                }}>
+                    <div style={{
+                        width: '48px',
+                        height: '48px',
+                        backgroundColor: '#4CAF50',
+                        borderRadius: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto 16px auto'
+                    }}>
+                        <span style={{ color: 'white', fontSize: '24px' }}>✓</span>
+                    </div>
+                    <h2 style={{
+                        margin: '0 0 16px 0',
+                        fontSize: '18px',
+                        color: '#333',
+                        fontWeight: '500'
+                    }}>
+                        Success!
+                    </h2>
+                    <p style={{
+                        margin: '0',
+                        color: '#666',
+                        fontSize: '14px',
+                        lineHeight: '1.5'
+                    }}>
+                        Property has been updated successfully
+                    </p>
+                </DialogContent>
+                <DialogActions style={{
+                    justifyContent: 'center',
+                    padding: '24px 0 0 0'
+                }}>
+                    <Button
+                        onClick={onClose}
+                        style={{
+                            backgroundColor: '#4CAF50',
+                            color: 'white',
+                            textTransform: 'none',
+                            padding: '6px 16px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            borderRadius: '4px',
+                            minWidth: '100px'
+                        }}
+                    >
+                        Continue
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        );
+    };
+
+    // Update handleSubmit function with proper validation
+    const handleSubmit = async () => {
+        try {
+            setFormSubmit(true);
+            
+            // Basic Details Validation
+            if (!formData.adType) {
+                alert("Ad Type is required");
+                return;
+            }
+            if (!formData.propertyType) {
+                alert("Property Type is required");
+                return;
+            }
+            if (!formData.propertySubType) {
+                alert("Property Sub Type is required");
+                return;
+            }
+
+            // Location Details Validation
+            if (!formData.plotNumber) {
+                alert("Plot Number is required");
+                return;
+            }
+            if (!formData.state) {
+                alert("State is required");
+                return;
+            }
+            if (!formData.city) {
+                alert("City is required");
+                return;
+            }
+            if (!formData.subDistrict) {
+                alert("Sub District is required");
+                return;
+            }
+            if (!formData.locality) {
+                alert("Locality is required");
+                return;
+            }
+            if (!formData.completeAddress) {
+                alert("Complete Address is required");
+                return;
+            }
+            if (!formData.pinCode) {
+                alert("Pin Code is required");
+                return;
+            }
+            if (!PINCODE_PATTERN.test(formData.pinCode)) {
+                alert("Pin Code must be a valid 6-digit number");
+                return;
+            }
+
+            // Property Details Validation
+            if (!formData.plotSize) {
+                alert("Plot Size is required");
+                return;
+            }
+            if (!formData.plotSizeUnit) {
+                alert("Plot Size Unit is required");
+                return;
+            }
+
+            // Amount Validation
+            if (!formData.amount) {
+                alert("Expected Amount is required");
+                return;
+            }
+
+            // Create FormData for image upload
+            const imageFormData = new FormData();
+            
+            // Handle cover image
+            if (formData.coverImage && typeof formData.coverImage === 'object') {
+                imageFormData.append('coverImage', formData.coverImage);
+            }
+            
+            // Handle other images
+            if (formData.otherImages && formData.otherImages.length > 0) {
+                const otherImages = Array.isArray(formData.otherImages) 
+                    ? formData.otherImages 
+                    : JSON.parse(formData.otherImages);
+                
+                otherImages.forEach((img, index) => {
+                    if (typeof img === 'object' && img.file) {
+                        imageFormData.append(`otherImage${index}`, img.file);
+                    }
+                });
+            }
+
+            // Upload images first if there are any new images
+            let uploadedImages = {
+                coverImage: typeof formData.coverImage === 'string' ? formData.coverImage : null,
+                otherImages: []
+            };
+
+            if (imageFormData.has('coverImage') || imageFormData.has('otherImage0')) {
+                const uploadRes = await axios.post(
+                    import.meta.env.VITE_BACKEND + '/api/property/upload-image',
+                    imageFormData,
+                    { headers: { 'Content-Type': 'multipart/form-data' } }
+                );
+                
+                if (uploadRes.data.success) {
+                    uploadedImages = uploadRes.data.images;
+                }
+            }
+
+            // Prepare final form data
+            const finalData = {
+                ...formData,
+                coverImage: uploadedImages.coverImage || formData.coverImage,
+                otherImages: uploadedImages.otherImages.length > 0 
+                    ? uploadedImages.otherImages 
+                    : (Array.isArray(formData.otherImages) 
+                        ? formData.otherImages.map(img => typeof img === 'string' ? img : img.uploadedName)
+                        : JSON.parse(formData.otherImages || '[]')),
+                pro_negotiable: formData.negotiable ? "Yes" : "No",
+                pro_rental_status: formData.rented ? "Yes" : "No",
+                pro_corner: formData.corner ? "Yes" : "No"
+            };
+
+            // Submit the form
+            const response = await axios.put(
+                import.meta.env.VITE_BACKEND + `/api/listing/updateProperty/${propertyId}`,
+                finalData
+            );
+
+            if (response.data.success) {
+                setShowSuccessPopup(true);
+            } else {
+                alert("Failed to update property. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error updating property:", error);
+            alert("An error occurred while updating the property.");
+        }
+    };
 
     return (
         <>
@@ -289,11 +726,10 @@ const MyProperty = () => {
                                     onPlaceChanged={onPlaceChanged}
                                     options={{
                                         types: ["geocode"],
-                                        componentRestrictions: { country: "in" },
+                                        componentRestrictions: { country: "in" }
                                     }}
                                 >
                                     <input
-                                        id="location-input"
                                         type="text"
                                         className="myproperty-location-input"
                                         placeholder="Enter location"
@@ -309,7 +745,7 @@ const MyProperty = () => {
                         <div className="auto-filled-fields">
                             <div className="myproperty-location-autofill-row">
                                 <div style={{flex:1}} className='col-md-4'>
-                                    <label className="myproperty-label">Plot Number</label>
+                                    <label className="myproperty-label">Plot Number <span style={{ color: '#ec161e' }}>*</span></label>
                                     <input
                                         type="text"
                                         className="myproperty-location-input"
@@ -401,13 +837,14 @@ const MyProperty = () => {
                             {/* Plot & Road Details */}
                             <div className="row">
                                 <div className="col-md-4 inside-section-wrapper" >
-                                    <label className="myproperty-label">Area Plot Size *</label>
+                                    <label className="myproperty-label">Area Plot Size <span style={{ color: '#ec161e' }}>*</span></label>
                                     <input
                                         className="myproperty-location-input"
                                         placeholder="Area Plot Size"
                                         value={formData.plotSize || ''}
                                         onChange={e => setFormData({ ...formData, plotSize: e.target.value })}
                                     />
+                                    {formSubmit && !formData.plotSize && <div className="myproperty-error-msg">Plot Size is required</div>}
                                 </div>
                                 <div className="col-md-2 inside-section-wrapper">
                                     <label className="myproperty-label">Unit</label>
@@ -463,6 +900,9 @@ const MyProperty = () => {
                             </div>
                             {/* Pill Groups */}
                             <div className="row">
+                            
+                                            {(formData.propertyType !== "Land") &&
+                                            <>
                                 <div className="col-md-12 inside-section-wrapper">
                                     <label className="myproperty-label">Age of Property (in year)</label>
                                     <div className="myproperty-pill-group">
@@ -528,6 +968,8 @@ const MyProperty = () => {
                                         ))}
                                     </div>
                                 </div>
+                                </>
+                                             }
                                 <div className="col-md-12 inside-section-wrapper">
                                     <label className="myproperty-label">Property Facing</label>
                                     <div className="myproperty-pill-group">
@@ -541,6 +983,8 @@ const MyProperty = () => {
                                         ))}
                                     </div>
                                 </div>
+                                {(formData.propertyType !== "Land") &&
+                                           
                                 <div className="col-md-12 inside-section-wrapper">
                                     <label className="myproperty-label">Furnishing</label>
                                     <div className="myproperty-pill-group">
@@ -554,6 +998,7 @@ const MyProperty = () => {
                                         ))}
                                     </div>
                                 </div>
+}
                                 <div className="col-md-12 inside-section-wrapper">
                                     <label className="myproperty-label">Possession Available</label>
                                     <div className="myproperty-pill-group">
@@ -567,6 +1012,7 @@ const MyProperty = () => {
                                         ))}
                                     </div>
                                 </div>
+                                 {(formData.propertyType !== "Land") &&
                                 <div className="col-md-6 inside-section-wrapper">
                                     <label className="myproperty-label">Number of Floors</label>
                                     <div className="myproperty-pill-group">
@@ -580,6 +1026,8 @@ const MyProperty = () => {
                                         ))}
                                     </div>
                                 </div>
+                                }
+
                                 <div className="col-md-6 inside-section-wrapper">
                                     <label className="myproperty-label">Number of Open Sides</label>
                                     <div className="myproperty-pill-group">
@@ -610,18 +1058,54 @@ const MyProperty = () => {
                                         accept="image/jpeg,image/png,image/webp"
                                         onChange={e => {
                                             if (e.target.files && e.target.files[0]) {
-                                                setFormData({ ...formData, coverImage: e.target.files[0] });
+                                                const file = e.target.files[0];
+                                                const error = validateImage(file);
+                                                setFormData({ 
+                                                    ...formData, 
+                                                    coverImage: {
+                                                        file,
+                                                        error,
+                                                        preview: URL.createObjectURL(file)
+                                                    }
+                                                });
                                             }
+                                            e.target.value = "";
                                         }}
                                     />
+                                    <div className="image-upload-note" style={{fontSize: '0.85em', color: '#666', marginTop: 4}}>
+                                        (JPG, PNG, WEBP, 10KB - 1MB)
+                                    </div>
                                     {formData.coverImage && (
-                                        <div style={{marginTop: 8}}>
+                                        <div style={{marginTop: 8, position: 'relative', display: 'inline-block'}}>
                                             <img
-                                                src={typeof formData.coverImage === 'string' ? formData.coverImage : URL.createObjectURL(formData.coverImage)}
+                                                src={
+                                                    typeof formData.coverImage === 'object' && formData.coverImage.file
+                                                        ? URL.createObjectURL(formData.coverImage.file)
+                                                        : `https://landmarkplots.com/uploads/${formData.coverImage}`
+                                                }
                                                 alt="cover"
-                                                style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 6 }}
+                                                style={{ 
+                                                    width: 120, 
+                                                    height: 80, 
+                                                    objectFit: 'cover', 
+                                                    borderRadius: 6,
+                                                    border: formData.coverImage.error ? '2px solid #ec161e' : 'none'
+                                                }}
                                             />
-                                            <button type="button" className="myproperty-image-remove-btn" onClick={() => setFormData({ ...formData, coverImage: null })}>&times;</button>
+                                            <button
+                                                type="button"
+                                                className="myproperty-image-remove-btn"
+                                                style={{ position: 'absolute', top: 4, right: 4 }}
+                                                onClick={() => setFormData({ ...formData, coverImage: null })}
+                                                title="Remove"
+                                            >
+                                                &times;
+                                            </button>
+                                            {formData.coverImage.error && (
+                                                <div className="myproperty-error-msg" style={{marginTop: 4}}>
+                                                    {formData.coverImage.error}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -633,21 +1117,107 @@ const MyProperty = () => {
                                         accept="image/jpeg,image/png,image/webp"
                                         multiple
                                         onChange={e => {
-                                            if (e.target.files) {
-                                                setFormData({ ...formData, otherImages: Array.from(e.target.files) });
-                                            }
+                                            const files = Array.from(e.target.files);
+                                            let currentImages = Array.isArray(formData.otherImages)
+                                                ? formData.otherImages
+                                                : JSON.parse(formData.otherImages || "[]");
+                                            
+                                            // Process all files, including those beyond limit
+                                            const newImages = files.map(file => ({
+                                                file,
+                                                error: validateImage(file),
+                                                preview: URL.createObjectURL(file),
+                                                isOverLimit: (currentImages.length + files.length) > MAX_OTHER_IMAGES
+                                            }));
+                                            
+                                            // Combine with existing images
+                                            const combined = [...currentImages, ...newImages];
+                                            
+                                            // Mark images over limit
+                                            combined.forEach((img, idx) => {
+                                                if (idx >= MAX_OTHER_IMAGES) {
+                                                    img.isOverLimit = true;
+                                                    if (!img.error) {
+                                                        img.error = `Exceeds maximum limit of ${MAX_OTHER_IMAGES} images`;
+                                                    }
+                                                }
+                                            });
+                                            
+                                            setFormData({ ...formData, otherImages: combined });
+                                            e.target.value = "";
                                         }}
                                     />
-                                    {formData.otherImages && formData.otherImages.length > 0 && (
+                                    <div className="image-upload-note" style={{fontSize: '0.85em', color: '#666', marginTop: 4}}>
+                                        (JPG, PNG, WEBP, 10KB - 1MB, up to {MAX_OTHER_IMAGES} images)
+                                    </div>
+                                    {formData.otherImages && (
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
-                                            {formData.otherImages.map((img, idx) => (
+                                            {(Array.isArray(formData.otherImages)
+                                                ? formData.otherImages
+                                                : JSON.parse(formData.otherImages)
+                                            ).map((img, idx) => (
                                                 <div key={idx} style={{ position: 'relative' }}>
                                                     <img
-                                                        src={typeof img === 'string' ? img : URL.createObjectURL(img)}
+                                                        src={
+                                                            typeof img === 'object' && img.file
+                                                                ? URL.createObjectURL(img.file)
+                                                                : `https://landmarkplots.com/uploads/${img}`
+                                                        }
                                                         alt={`other-${idx}`}
-                                                        style={{ width: 90, height: 60, objectFit: 'cover', borderRadius: 6 }}
+                                                        style={{ 
+                                                            width: 90, 
+                                                            height: 60, 
+                                                            objectFit: 'cover', 
+                                                            borderRadius: 6,
+                                                            border: img.error || img.isOverLimit ? '2px solid #ec161e' : 'none',
+                                                            opacity: img.isOverLimit ? 0.7 : 1
+                                                        }}
                                                     />
-                                                    <button type="button" className="myproperty-image-remove-btn" onClick={() => setFormData({ ...formData, otherImages: formData.otherImages.filter((_, i) => i !== idx) })}>&times;</button>
+                                                    <button
+                                                        type="button"
+                                                        className="myproperty-image-remove-btn"
+                                                        onClick={() => {
+                                                            const currentImages = Array.isArray(formData.otherImages)
+                                                                ? formData.otherImages
+                                                                : JSON.parse(formData.otherImages || "[]");
+                                                            
+                                                            const newImages = currentImages.filter((_, i) => i !== idx);
+                                                            
+                                                            // Recalculate over-limit status
+                                                            newImages.forEach((img, i) => {
+                                                                if (i < MAX_OTHER_IMAGES) {
+                                                                    if (typeof img === 'object') {
+                                                                        img.isOverLimit = false;
+                                                                        if (img.error === `Exceeds maximum limit of ${MAX_OTHER_IMAGES} images`) {
+                                                                            img.error = '';
+                                                                        }
+                                                                    }
+                                                                }
+                                                            });
+                                                            
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                otherImages: newImages
+                                                            }));
+                                                        }}
+                                                        title="Remove"
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                    {(img.error || img.isOverLimit) && (
+                                                        <div className="myproperty-error-msg" style={{
+                                                            position: 'absolute',
+                                                            bottom: -20,
+                                                            left: 0,
+                                                            right: 0,
+                                                            fontSize: '0.75em',
+                                                            textAlign: 'center',
+                                                            backgroundColor: 'rgba(255,255,255,0.9)',
+                                                            padding: '2px 4px'
+                                                        }}>
+                                                            {img.error || `Over ${MAX_OTHER_IMAGES} limit`}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -687,6 +1257,7 @@ const MyProperty = () => {
                                         ))}
                                     </div>
                                 </div>
+                                {(formData.propertyType !== "Land") &&
                                 <div className="col-md-4 inside-section-wrapper">
                                     <label className="myproperty-label">Other Rooms</label>
                                     <div className="myproperty-pill-group">
@@ -703,6 +1274,7 @@ const MyProperty = () => {
                                         ))}
                                     </div>
                                 </div>
+                                }
                                 <div className="col-md-12 inside-section-wrapper">
                                     <label className="myproperty-label">Near By Facilities</label>
                                     <div className="myproperty-pill-group">
@@ -720,13 +1292,17 @@ const MyProperty = () => {
                                     </div>
                                 </div>
                                 <div className="col-md-4 inside-section-wrapper">
-                                    <label className="myproperty-label">Expected Amount</label>
+                                    <label className="myproperty-label">Expected Amount <span style={{ color: '#ec161e' }}>*</span></label>
                                     <input
                                         className="myproperty-location-input"
                                         placeholder="Expected Amount"
                                         value={formData.amount || ''}
                                         onChange={e => setFormData({ ...formData, amount: e.target.value.replace(/[^0-9]/g, '') })}
                                     />
+                                    {formSubmit && !formData.amount && <div className="myproperty-error-msg">Expected Amount is required</div>}
+                                    <div className="price-in-words" style={{ background: '#f6fbf6', color: '#388e3c', padding: '6px 12px', borderRadius: 4, fontSize: '1em', marginTop: 2 }}>
+                                        {priceFormat(formData.amount)}
+                                    </div>
                                 </div>
                                 <div className="col-md-8 inside-section-wrapper">
                                     <label className="myproperty-label">&nbsp;</label>
@@ -757,7 +1333,29 @@ const MyProperty = () => {
                     </div>
 
                 </div>
+                <div style={{ marginTop: '20px', textAlign: 'right' }}>
+                    <button
+                        onClick={handleSubmit}
+                        style={{
+                            background: '#1a73e8',
+                            color: 'white',
+                            border: 'none',
+                            padding: '10px 20px',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Save Changes
+                    </button>
+                </div>
             </LoadScript>
+            <SuccessModal 
+                open={showSuccessPopup}
+                onClose={() => {
+                    setShowSuccessPopup(false);
+                    navigate('/dashboard');
+                }}
+            />
         </>
     )
 }

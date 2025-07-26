@@ -4,48 +4,62 @@ import './App.css'
 import Dashboard from './pages/dashboard/Dashboard'
 import MyProperty from './pages/myProperty/MyProperty'
 import { AuthContext } from './context2/AuthContext';
+import SessionOutLoginAgain from './components/Table/SessionOutLoginAgain';
 import {
   RouterProvider,
   createBrowserRouter,
   Navigate,
+  Outlet
 } from "react-router-dom";
 // import Table from './pages/table/Table';
 import Index from './pages/index/Index';
-const router = createBrowserRouter([
+import LoginRequired from './components/Table/LoginRequired';
 
-  // {
-  //   path: "/table",
-  //   element: <Table />,
-  // },
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { currentUser } = useContext(AuthContext);
+
+  if (!currentUser) {
+    return (
+      <div style={{
+        boxShadow: "0 2px 10px 0 rgba(0, 0, 0, 0.1)",
+        border: "1px solid #dee2e6",
+        borderRadius: "13px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh"
+      }}>
+        <LoginRequired />
+      </div>
+    );
+  }
+
+  return children ? children : <Outlet />;
+};
+
+const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      // <ProtectedRoute>
+      <ProtectedRoute>
         <Index />
-      // </ProtectedRoute>
+      </ProtectedRoute>
     ),
     children: [
       {
         path: "dashboard",
-        element: (
-          <>
-            {/* <SendJwt /> */}
-            <Dashboard />
-          </>
-        ),
+        element: <Dashboard />
       },
       {
         path: "my-property/:propertyId",
         element: <MyProperty />
       }
-]}
-  
-])
+    ]
+  }
+]);
 
 function App() {
-
-  const {currentUser} = useContext(AuthContext);
-  console.log('currentUser ', currentUser);
   return <RouterProvider router={router} />;
 }
 

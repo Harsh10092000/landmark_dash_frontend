@@ -44,14 +44,14 @@ import Loader from "../../components/loader/Loader";
 
 const ActionDropdownMenu1 = [
   { to: "/viewProperty", title: "View property", icon: <ViewIcon /> },
-  { to: "/editProperty", title: "Edit property", icon: <EditIcon /> },
+  { to: "/my-property", title: "Edit property", icon: <EditIcon /> },
   { to: "/editProperty", title: "Active", icon: <ListAgainIcon /> },
   { to: "/editProperty", title: "Mark as Sold", icon: <MarkIcon /> },
   { to: "/editProperty", title: "Delete", icon: <DeleteIcon /> },
 ];
 
 const ActionDropdownMenu2 = [
-  { to: "/editProperty", title: "Edit property", icon: <EditIcon /> },
+  { to: "/my-property", title: "Edit property", icon: <EditIcon /> },
   { to: "/editProperty", title: "Delete", icon: <DeleteIcon /> },
 ];
 
@@ -151,7 +151,7 @@ const Dashboard = () => {
       axios
         .get(
           import.meta.env.VITE_BACKEND +
-            `/api/pro/fetchPropertyDataByUserId1/${currentUser?.user.id}`
+            `/api/listing/getPropertiesByUserId/${currentUser?.user.id}`
         )
         .then((res) => {
           if (res.data === "failed") {
@@ -194,33 +194,50 @@ const Dashboard = () => {
     [data]
   );
 
+  // Add these computed values for the counts
   const filteredData = useMemo(() => {
     return data
-      .filter((item) => {
-        if (filter === "All") {
-          return true;
-        }
-        if (filter) {
-          return PropertyTypeFunction(item.pro_type) === filter;
-        }
-        return true;
-      })
+        .filter((item) => {
+            // First apply the property type filter
+            if (filter === "All") {
+                return true;
+            }
+            if (filter === "Listed Properties") {
+                return item.pro_listed === 1;
+            }
+            if (filter === "Delisted Properties") {
+                return item.pro_listed === 0;
+            }
+            if (filter === "Sold Out Properties") {
+                return item.pro_listed === 2;
+            }
+            // Property type filter
+            return PropertyTypeFunction(item.pro_type) === filter;
+        })
+        .filter((item) => {
+            // Then apply search filter
+            if (!searchValue) return true;
+            const normalizedSearch = searchValue.toLowerCase();
+            return (
+                item.pro_locality?.toLowerCase().includes(normalizedSearch) ||
+                item.pro_sub_district?.toLowerCase().includes(normalizedSearch) ||
+                item.pro_pincode?.startsWith(searchValue) ||
+                item.pro_modified_id?.toString().startsWith(searchValue) ||
+                item.pro_city?.toLowerCase().includes(normalizedSearch) ||
+                item.pro_state?.toLowerCase().startsWith(normalizedSearch) ||
+                item.pro_ad_type?.toLowerCase().startsWith(normalizedSearch)
+            );
+        });
+}, [data, filter, searchValue]);
 
-      .filter((item) => {
-        // Search filter
-        if (!searchValue) return true;
-        const normalizedSearch = searchValue.toLowerCase();
-        return (
-          item.pro_locality?.toLowerCase().includes(normalizedSearch) ||
-          item.pro_sub_district?.toLowerCase().includes(normalizedSearch) ||
-          item.pro_pincode?.startsWith(searchValue) ||
-          item.pro_modified_id?.toString().startsWith(searchValue) ||
-          item.pro_city?.toLowerCase().includes(normalizedSearch) ||
-          item.pro_state?.toLowerCase().startsWith(normalizedSearch) ||
-          item.pro_ad_type?.toLowerCase().startsWith(normalizedSearch)
-        );
-      });
-  }, [data, filter, searchValue]);
+// Add counts computation
+const propertyCounts = useMemo(() => {
+    return {
+        listedCount: data.filter(item => item.pro_listed === 1).length,
+        delistedCount: data.filter(item => item.pro_listed === 0).length,
+        soldCount: data.filter(item => item.pro_listed === 2).length
+    };
+}, [data]);
 
   const nPages = Math.ceil(filteredData.length / recordsPerPage);
 
@@ -273,8 +290,8 @@ const Dashboard = () => {
     { 
       value: "Id", 
       sortable: true, 
-      field: 'pro_modified_id',
-      currentSort: sortField === 'pro_modified_id' ? sortDirection : null
+      field: 'listing_id',
+      currentSort: sortField === 'listing_id' ? sortDirection : null
     },
     { 
       value: "Property Type", 
@@ -305,6 +322,13 @@ const Dashboard = () => {
       currentSort: sortField === 'pro_creation_date' ? sortDirection : null
     },
     { 
+      value: "Last Updated", 
+      customClass: "div-table-cell-date",
+      sortable: true,
+      field: 'last_updated',
+      currentSort: sortField === 'last_updated' ? sortDirection : null
+    },
+    { 
       value: "Status", 
       customClass: "div-table-cell-action-btn",
       sortable: true,
@@ -332,17 +356,26 @@ const Dashboard = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Update the deleteProperty function
   const deleteProperty = async () => {
     try {
-      await axios.delete(
-        import.meta.env.VITE_BACKEND + `/api/admin/deletePro/${delId}`
+      setLoader(true);
+      const response = await axios.delete(
+        import.meta.env.VITE_BACKEND + `/api/listing/deleteProperty/${delId}`
       );
-      setSearchValue("");
-      setChange(change + 1);
-      setSnackDel(true);
-      setOpenDel(false);
+      
+      if (response.data.success) {
+        setChange(change + 1);
+        setSnackDel(true);
+        setOpenDel(false);
+      } else {
+        setSnackQ(true);
+      }
     } catch (err) {
-      console.log(err);
+      console.error("Error deleting property:", err);
+      setSnackQ(true);
+    } finally {
+      setLoader(false);
     }
   };
 
@@ -405,14 +438,13 @@ const Dashboard = () => {
   const handleAction = async (pro_url, pro_id, action, to) => {
     setSelectedItem(action);
     setOpenDropdownId(null);
-    setActionProId(pro_id)
     try {
       switch (action) {
         case "View property":
-          window.open(`https://propertyease.in/${pro_url}`, "_blank");
+          window.open(`https://landmarkplots.com/${pro_url}`, "_blank");
           break;
         case "Edit property":
-          navigate(`${to}/${pro_url}`);
+          navigate(`${to}/${pro_id}`);
           break;
         case "Active":
           // await axios.put(
@@ -436,9 +468,8 @@ const Dashboard = () => {
           setSnack(true);
           break;
         case "Delete":
-          //setSelectedProId(pro_id);
-          //setOpenDel(true);
-          handleClickOpenDel(true);
+          setDelId(pro_id);
+          setOpenDel(true);
           break;
         default:
           console.warn(`Unknown action: ${action}`);
@@ -592,13 +623,16 @@ const Dashboard = () => {
         message={"Property Listed"}
       />
       <TabSection
-        allPropertiesLength={filteredData.length}
+        allPropertiesLength={data.length}
+        listedCount={propertyCounts.listedCount}
+        delistedCount={propertyCounts.delistedCount}
+        soldCount={propertyCounts.soldCount}
         onTabChange={(tabLabel) => {
           const filterMap = {
             "All Properties": "All",
             "Listed Properties": "Listed Properties",
             "Delisted/Expired": "Delisted Properties",
-            "Sold Out Properties": "All",
+            "Sold Out Properties": "Sold Out Properties"
           };
           setFilter(filterMap[tabLabel] || "All");
           setCurrentPage(1);
@@ -636,7 +670,7 @@ const Dashboard = () => {
           ) : records.length > 0 ? (
             records.map((item) => (
               <div className="div-table-row" key={item.pro_id}>
-                <div className="div-table-cell">{item.pro_modified_id}</div>
+                <div className="div-table-cell">{item.listing_id}</div>
                 <div className="div-table-cell mobile-hidden-field">
                   {PropertyTypeFunction(item.pro_type)}
                   <span className="d-block pro-slug-space pl-1" >{PropertyTypeFunction(item.pro_sub_cat.split(",")[0])}</span>
@@ -649,6 +683,9 @@ const Dashboard = () => {
                 </div>
                 <div className="div-table-cell div-table-cell-date">
                   {DateFormat(item.pro_creation_date)}
+                </div>
+                <div className="div-table-cell div-table-cell-date">
+                  { item.last_updated ? DateFormat(item.last_updated) : "-"}
                 </div>
                 {/* <div className="div-table-cell div-table-cell-date">
                   {DateFormat(item.pro_renew_date)}
