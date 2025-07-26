@@ -74,6 +74,11 @@
     .dashboard-sideBar-wrapper { 
       /* display: none; */
     }
+
+    .dashboard-right {
+      width: auto;
+  }
+
     .dashboard-right-main {
         margin: 0px !important;
         padding: 0px !important;
