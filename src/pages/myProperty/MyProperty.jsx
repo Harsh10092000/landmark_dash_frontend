@@ -589,9 +589,12 @@ const MyProperty = () => {
             // Create FormData for image upload
             const imageFormData = new FormData();
             
+            let fileIndex = 0;
+            
             // Handle cover image
-            if (formData.coverImage && typeof formData.coverImage === 'object') {
-                imageFormData.append('coverImage', formData.coverImage);
+            if (formData.coverImage && typeof formData.coverImage === 'object' && formData.coverImage.file) {
+                imageFormData.append(`file${fileIndex}`, formData.coverImage.file);
+                fileIndex++;
             }
             
             // Handle other images
@@ -602,7 +605,8 @@ const MyProperty = () => {
                 
                 otherImages.forEach((img, index) => {
                     if (typeof img === 'object' && img.file) {
-                        imageFormData.append(`otherImage${index}`, img.file);
+                        imageFormData.append(`file${fileIndex}`, img.file);
+                        fileIndex++;
                     }
                 });
             }
@@ -615,15 +619,26 @@ const MyProperty = () => {
 
             const MAIN_SITE_URL = import.meta.env.VITE_MAIN_SITE_URL || 'https://landmarkplots.com';
 
-            if (imageFormData.has('coverImage') || imageFormData.has('otherImage0')) {
+            if (fileIndex > 0) {
                     const uploadRes = await axios.post(
                         MAIN_SITE_URL + '/api/property/upload-image',
                         imageFormData,
                         { headers: { 'Content-Type': 'multipart/form-data' } }
                     );
                 
-                if (uploadRes.data.success) {
-                    uploadedImages = uploadRes.data.images;
+                if (uploadRes.data.success && uploadRes.data.filenames) {
+                    const filenames = uploadRes.data.filenames;
+                    
+                    // Separate cover image and other images
+                    // First file is cover image (if cover was uploaded), rest are other images
+                    const hasCoverImage = formData.coverImage && typeof formData.coverImage === 'object' && formData.coverImage.file;
+                    
+                    if (hasCoverImage && filenames.length > 0) {
+                        uploadedImages.coverImage = filenames[0];
+                        uploadedImages.otherImages = filenames.slice(1);
+                    } else {
+                        uploadedImages.otherImages = filenames;
+                    }
                 }
             }
 
