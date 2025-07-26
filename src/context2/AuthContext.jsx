@@ -6,9 +6,11 @@ export const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Function to check session
   const checkSession = () => {
+    setIsLoading(true);
     axios
       .get(import.meta.env.VITE_BACKEND + '/api/session/getSessionData', {
         withCredentials: true,
@@ -16,6 +18,7 @@ export const AuthContextProvider = ({ children }) => {
       .then((res) => {
         console.log('AuthContext - Session data:', res.data); 
         setCurrentUser(res.data);
+        setIsLoading(false);
       })
       .catch((err) => {
         console.error('AuthContext - Fetch error:', {
@@ -24,6 +27,7 @@ export const AuthContextProvider = ({ children }) => {
           data: err.response?.data,
         });
         setCurrentUser(null);
+        setIsLoading(false);
       });
   };
 
@@ -55,7 +59,7 @@ export const AuthContextProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{currentUser, checkSession, logout}}>
+    <AuthContext.Provider value={{currentUser, checkSession, logout, isLoading}}>
       {children}
     </AuthContext.Provider>
   );

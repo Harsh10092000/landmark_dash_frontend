@@ -10,6 +10,7 @@ import { IconCircleCheck, IconCircleCheckFilled } from '@tabler/icons-react';
 import NoData from '../../components/Table/NoData';
 import { AuthContext } from '../../context2/AuthContext';
 import SessionOutLoginAgain from '../../components/Table/SessionOutLoginAgain';
+import Loading from '../../components/Loading';
 
 const MyProperty = () => {
     const { currentUser } = useContext(AuthContext);
@@ -316,64 +317,61 @@ const MyProperty = () => {
             .then((res) => {
                 console.log("res.data : ", res.data[0]);
               if (res.data === "failed") {
-                clearUser();
+                // Handle failed response without clearUser
+                console.error("Failed to fetch property data");
               } else {
-                const formattedData = res.data.map((item, i) => ({
-                  ...item,
-                  serial_no: i + 1,
-                  pro_modified_id: `LM-${7600 + parseInt(item.pro_id)}`,
-                }));
-    
-              
-    
-                formData.adType = res.data[0].pro_ad_type;
-                formData.propertyType = res.data[0].pro_type;
-                // Fix propertySubType initialization
-                formData.propertySubType = res.data[0].pro_sub_cat;
-                formData.plotNumber = res.data[0].pro_plot_no;
-                formData.state = res.data[0].pro_state;
-                formData.city = res.data[0].pro_city;
-                formData.subDistrict = res.data[0].pro_sub_district;
-                formData.locality = res.data[0].pro_locality;
-                formData.completeAddress = res.data[0].pro_street;
-                formData.pinCode = res.data[0].pro_pincode;
-                formData.coverImage = res.data[0].pro_cover_image;
-                formData.otherImages = res.data[0].pro_other_images ? JSON.parse(res.data[0].pro_other_images) : [];
-                formData.ownership = res.data[0].pro_ownership_type;
-                formData.authority = res.data[0].pro_user_type;
-                formData.plotSize = res.data[0].pro_area_size;
-                formData.plotSizeUnit = res.data[0].pro_area_size_unit;
-                formData.roadWidth = res.data[0].pro_facing_road_width;
-                formData.roadWidthUnit = res.data[0].pro_facing_road_unit;
-                formData.plotWidth = res.data[0].pro_width;
-                formData.plotLength = res.data[0].pro_length;
-                formData.bedrooms = res.data[0].pro_bedroom;
-                formData.bathrooms = res.data[0].pro_washrooms;
-                formData.balcony = res.data[0].pro_balcony;
-                formData.facing = res.data[0].pro_facing;
-                formData.facingRoadUnit = res.data[0].pro_facing_road_unit;
-                formData.facingRoadWidth = res.data[0].pro_facing_road_width;
-                formData.facingRoadWidthUnit = res.data[0].pro_facing_road_unit;
-                formData.amount = res.data[0].pro_amt;
-                formData.negotiable = res.data[0].pro_negotiable === "Yes";
-                formData.rented = res.data[0].pro_rental_status === "Yes";
-                formData.corner = res.data[0].pro_corner === "Yes";
-                formData.desc = res.data[0].pro_desc;
-                formData.otherRooms = res.data[0].pro_other_rooms ? JSON.parse(res.data[0].pro_other_rooms) : [];
-                formData.facilities = res.data[0].pro_near_by_facilities ? JSON.parse(res.data[0].pro_near_by_facilities) : [];
-                formData.authority = res.data[0].pro_approval;
-                formData.age = res.data[0].pro_age || '';
-                formData.possession = res.data[0].pro_possession || '';
-                formData.furnishing = res.data[0].pro_furnishing || '';
-                formData.floor = res.data[0].pro_floor || 0;
-                formData.openSides = res.data[0].pro_open_sides || 0;
-                formData.parking = res.data[0].pro_parking || 0;
-                setFormSubmit(true);
-                //setChange(!change);
+                const propertyData = res.data[0];
+                
+                // Create new form data object instead of mutating
+                const newFormData = {
+                  adType: propertyData.pro_ad_type || '',
+                  propertyType: propertyData.pro_type || '',
+                  propertySubType: propertyData.pro_sub_cat || '',
+                  plotNumber: propertyData.pro_plot_no || '',
+                  state: propertyData.pro_state || '',
+                  city: propertyData.pro_city || '',
+                  subDistrict: propertyData.pro_sub_district || '',
+                  locality: propertyData.pro_locality || '',
+                  completeAddress: propertyData.pro_street || '',
+                  pinCode: propertyData.pro_pincode || '',
+                  coverImage: propertyData.pro_cover_image || '',
+                  otherImages: propertyData.pro_other_images ? JSON.parse(propertyData.pro_other_images) : [],
+                  ownership: propertyData.pro_ownership_type || '',
+                  authority: propertyData.pro_user_type || '',
+                  plotSize: propertyData.pro_area_size || '',
+                  plotSizeUnit: propertyData.pro_area_size_unit || 'Marla',
+                  roadWidth: propertyData.pro_facing_road_width || '',
+                  roadWidthUnit: propertyData.pro_facing_road_unit || 'Feet',
+                  plotWidth: propertyData.pro_width || '',
+                  plotLength: propertyData.pro_length || '',
+                  bedrooms: propertyData.pro_bedroom || '',
+                  washrooms: propertyData.pro_washrooms || '',
+                  balconies: propertyData.pro_balcony || '',
+                  facing: propertyData.pro_facing || '',
+                  amount: propertyData.pro_amt || '',
+                  negotiable: propertyData.pro_negotiable === "Yes",
+                  rented: propertyData.pro_rental_status === "Yes",
+                  corner: propertyData.pro_corner === "Yes",
+                  desc: propertyData.pro_desc || '',
+                  otherRooms: propertyData.pro_other_rooms ? JSON.parse(propertyData.pro_other_rooms) : [],
+                  facilities: propertyData.pro_near_by_facilities ? JSON.parse(propertyData.pro_near_by_facilities) : [],
+                  authority: propertyData.pro_approval || '',
+                  age: propertyData.pro_age || '',
+                  possession: propertyData.pro_possession || '',
+                  furnishing: propertyData.pro_furnishing || '',
+                  floor: propertyData.pro_floor || 0,
+                  openSides: propertyData.pro_open_sides || 0,
+                  parking: propertyData.pro_parking || 0,
+                };
+                
+                setFormData(newFormData);
               }
+            })
+            .catch((err) => {
+              console.error("Error fetching property data:", err);
             });
         }
-      }, [change, propertyId]);
+      }, [propertyId]); // Remove 'change' from dependencies
 
       console.log("formData : ", formData);
 
@@ -426,72 +424,96 @@ const MyProperty = () => {
     // Replace the SuccessPopup component with this new Modal component
     const SuccessModal = ({ open, onClose }) => {
         return (
-            <Dialog 
-                open={open} 
-                onClose={onClose}
-                maxWidth="xs"
-                fullWidth
-                PaperProps={{
-                    style: {
-                        borderRadius: '8px',
-                        padding: '24px'
-                    }
-                }}
-            >
-                <DialogContent style={{
-                    textAlign: 'center',
-                    padding: '0'
-                }}>
-                    <div style={{
-                        width: '48px',
-                        height: '48px',
-                        backgroundColor: '#4CAF50',
-                        borderRadius: '4px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto 16px auto'
-                    }}>
-                        <span style={{ color: 'white', fontSize: '24px' }}>✓</span>
+            <>
+                {open && (
+                    <div className="modal-backdrop">
+                        <div className="modern-modal">
+                            {/* Icon above title */}
+                            <div className="modal-icon">
+                                <svg width="38" height="38" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="12" fill="#f0fff4" />
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#38a169" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </div>
+                            <div className="modal-content">
+                                <h2 className="modal-title">Success!</h2>
+                                <div className="modal-subtext">Property has been updated successfully</div>
+                                <button className="modal-btn" onClick={onClose}>
+                                    CONTINUE
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <h2 style={{
-                        margin: '0 0 16px 0',
-                        fontSize: '18px',
-                        color: '#333',
-                        fontWeight: '500'
-                    }}>
-                        Success!
-                    </h2>
-                    <p style={{
-                        margin: '0',
-                        color: '#666',
-                        fontSize: '14px',
-                        lineHeight: '1.5'
-                    }}>
-                        Property has been updated successfully
-                    </p>
-                </DialogContent>
-                <DialogActions style={{
-                    justifyContent: 'center',
-                    padding: '24px 0 0 0'
-                }}>
-                    <Button
-                        onClick={onClose}
-                        style={{
-                            backgroundColor: '#4CAF50',
-                            color: 'white',
-                            textTransform: 'none',
-                            padding: '6px 16px',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            borderRadius: '4px',
-                            minWidth: '100px'
-                        }}
-                    >
-                        Continue
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                )}
+                <style jsx>{`
+                    .modal-backdrop {
+                        position: fixed;
+                        top: 0; left: 0; right: 0; bottom: 0;
+                        background: rgba(0,0,0,0.18);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 9999;
+                        animation: fadeIn 0.25s;
+                    }
+                    @keyframes fadeIn {
+                        from { opacity: 0; }
+                        to { opacity: 1; }
+                    }
+                    .modern-modal {
+                        background: linear-gradient(135deg, #fff 80%, #f0fff4 100%);
+                        border-radius: 22px;
+                        box-shadow: 0 12px 48px 0 rgba(56,161,105,0.15), 0 1.5px 8px 0 rgba(56,161,105,0.08);
+                        min-width: 340px;
+                        max-width: 420px;
+                        width: 100%;
+                        padding: 2.7rem 2.7rem 2.2rem 2.7rem;
+                        position: relative;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        animation: modalPop 0.18s cubic-bezier(.4,2,.6,1) both;
+                    }
+                    @keyframes modalPop {
+                        0% { transform: scale(0.95); opacity: 0; }
+                        100% { transform: scale(1); opacity: 1; }
+                    }
+                    .modal-icon {
+                        margin-bottom: 0.7rem;
+                        margin-top: -0.5rem;
+                    }
+                    .modal-title {
+                        font-size: 15px;
+                        font-weight: 800;
+                        color: #222;
+                        margin-bottom: 0.7rem;
+                        text-align: center;
+                    }
+                    .modal-subtext {
+                        color: #666;
+                        font-size: 13px;
+                        margin-bottom: 2.1rem;
+                        text-align: center;
+                    }
+                    .modal-btn {
+                        width: 100%;
+                        background: #38a169;
+                        color: #fff;
+                        border: none;
+                        border-radius: 8px;
+                        padding: 13px 0;
+                        font-size: 11.3px;
+                        font-weight: 700;
+                        letter-spacing: 1px;
+                        margin-top: .5rem;
+                        cursor: pointer;
+                        transition: background 0.18s;
+                    }
+                    .modal-btn:hover {
+                        background: #2f855a;
+                    }
+                `}</style>
+            </>
         );
     };
 
@@ -591,12 +613,14 @@ const MyProperty = () => {
                 otherImages: []
             };
 
+            const MAIN_SITE_URL = import.meta.env.VITE_MAIN_SITE_URL || 'https://landmarkplots.com';
+
             if (imageFormData.has('coverImage') || imageFormData.has('otherImage0')) {
-                const uploadRes = await axios.post(
-                    import.meta.env.VITE_BACKEND + '/api/property/upload-image',
-                    imageFormData,
-                    { headers: { 'Content-Type': 'multipart/form-data' } }
-                );
+                    const uploadRes = await axios.post(
+                        MAIN_SITE_URL + '/api/property/upload-image',
+                        imageFormData,
+                        { headers: { 'Content-Type': 'multipart/form-data' } }
+                    );
                 
                 if (uploadRes.data.success) {
                     uploadedImages = uploadRes.data.images;
@@ -618,14 +642,17 @@ const MyProperty = () => {
             };
 
             // Submit the form
+            
             const response = await axios.put(
                 import.meta.env.VITE_BACKEND + `/api/listing/updateProperty/${propertyId}`,
                 finalData
             );
 
             if (response.data.success) {
+                setFormSubmit(false);
                 setShowSuccessPopup(true);
             } else {
+                setFormSubmit(false);
                 alert("Failed to update property. Please try again.");
             }
         } catch (error) {
@@ -636,6 +663,7 @@ const MyProperty = () => {
 
     return (
         <>
+        {formSubmit && <Loading />}
             <LoadScript
                 googleMapsApiKey="AIzaSyDLzo_eOh509ONfCjn1XQp0ZM2pacPdnWc"
                 libraries={libraries}

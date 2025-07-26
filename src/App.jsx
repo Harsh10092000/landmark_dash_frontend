@@ -5,6 +5,7 @@ import Dashboard from './pages/dashboard/Dashboard'
 import MyProperty from './pages/myProperty/MyProperty'
 import { AuthContext } from './context2/AuthContext';
 import SessionOutLoginAgain from './components/Table/SessionOutLoginAgain';
+import Loading from './components/Loading';
 import {
   RouterProvider,
   createBrowserRouter,
@@ -17,8 +18,14 @@ import LoginRequired from './components/Table/LoginRequired';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, isLoading } = useContext(AuthContext);
 
+  // Show loading while checking session
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  // Show login required if no user
   if (!currentUser) {
     return (
       <div style={{
