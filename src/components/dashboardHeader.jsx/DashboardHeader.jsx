@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useContext } from 'react';
 import { AuthContext } from '../../context2/AuthContext';
-const DashboardHeader = ({ userName = 'User', onToggleSidebar }) => {
+const DashboardHeader = ({ onToggleSidebar }) => {
   const [pageName, setPageName] = useState('');
   const { currentUser } = useContext(AuthContext);
   useEffect(() => {
@@ -27,14 +27,14 @@ const DashboardHeader = ({ userName = 'User', onToggleSidebar }) => {
       <div className="d-flex align-items-center dashboard-header-inside-left gap-3">
         <div
           className="sidebar-toggle-icon d-flex align-items-center justify-content-center"
-          onClick={onToggleSidebar}
+          //onClick={onToggleSidebar}
           style={{
             width: 44,
             height: 44,
             borderRadius: '50%',
             background: '#f5f7fa',
             boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-            cursor: 'pointer',
+            // cursor: 'pointer',
             marginRight: 18,
           }}
         >
