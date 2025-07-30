@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-
-const DashboardHeader = ({ userName = 'User', userEmail = 'user@example.com', onToggleSidebar }) => {
+import { useContext } from 'react';
+import { AuthContext } from '../../context2/AuthContext';
+const DashboardHeader = ({ userName = 'User', onToggleSidebar }) => {
   const [pageName, setPageName] = useState('');
-
+  const { currentUser } = useContext(AuthContext);
   useEffect(() => {
     const pathname = window.location.pathname;
     const segments = pathname.split('/').filter(segment => segment);
@@ -67,8 +68,8 @@ const DashboardHeader = ({ userName = 'User', userEmail = 'user@example.com', on
           />
         </div>
         <div className="ms-2" style={{ lineHeight: 1.2 }}>
-          <div style={{ fontWeight: 600, fontSize: 18, color: '#222' }}>{userName}</div>
-          <div style={{ fontSize: 14, color: '#888' }}>{userEmail}</div>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#222', textTransform: 'capitalize' }}>{currentUser?.user.name}</div>
+          <div style={{ fontSize: 14, color: '#888' }}>{currentUser?.user.email}</div>
         </div>
       </div>
     </div>

@@ -143,7 +143,7 @@ const DashboardSideBar = ({ isSidebarOpen, toggleSidebar }) => {
     },
     {
       name: "All Properties",
-      url: "/dashboard",
+      url: `https://landmarkplots.com/allproperties`,
       icon: <AllProperties />,
     },
     {

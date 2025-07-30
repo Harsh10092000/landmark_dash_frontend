@@ -214,6 +214,7 @@
   font-size: 0.875rem;
   line-height: 1.57143;
   border-radius: 6px;
+  cursor: pointer;
 }
 
 .action-dropdown .action-dropdown-item.selected-action {

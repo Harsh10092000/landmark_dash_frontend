@@ -670,7 +670,7 @@ const propertyCounts = useMemo(() => {
           ) : records.length > 0 ? (
             records.map((item) => (
               <div className="div-table-row" key={item.pro_id}>
-                <div className="div-table-cell">{item.listing_id}</div>
+                <div className="div-table-cell"><Link className="text-decoration-none" to={`${import.meta.env.MAIN_WEBSITE}/${item.pro_url}`}>{item.listing_id}</Link></div>
                 <div className="div-table-cell mobile-hidden-field">
                   {PropertyTypeFunction(item.pro_type)}
                   <span className="d-block pro-slug-space pl-1" >{PropertyTypeFunction(item.pro_sub_cat.split(",")[0])}</span>

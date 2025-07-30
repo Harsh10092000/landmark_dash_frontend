@@ -520,7 +520,7 @@ const MyProperty = () => {
     // Update handleSubmit function with proper validation
     const handleSubmit = async () => {
         try {
-            setFormSubmit(true);
+                setFormSubmit(true);
             
             // Basic Details Validation
             if (!formData.adType) {
@@ -607,9 +607,9 @@ const MyProperty = () => {
                     if (typeof img === 'object' && img.file) {
                         imageFormData.append(`file${fileIndex}`, img.file);
                         fileIndex++;
-                    }
-                });
-            }
+              }
+            });
+        }
 
             // Upload images first if there are any new images
             let uploadedImages = {
