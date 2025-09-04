@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { LoadScript } from "@react-google-maps/api";
-import { Autocomplete } from "@react-google-maps/api";
+ 
 import axios from 'axios';  
 import { useParams, useNavigate } from 'react-router-dom';
 // Import Modal from MUI at the top
@@ -15,7 +14,7 @@ import Loading from '../../components/Loading';
 const MyProperty = () => {
     const { currentUser } = useContext(AuthContext);
     const PINCODE_PATTERN = /^[1-9][0-9]{5}$/;
-    const libraries = ["places"];
+    
     const { propertyId } = useParams();
 
     // Show SessionOutLoginAgain if no user session
@@ -60,7 +59,7 @@ const MyProperty = () => {
         propertyType: '',
         propertySubType: '',
         plotNumber: '',
-        state: '',
+        state: 'Haryana',
         city: '',
         subDistrict: '',
         locality: '',
@@ -174,103 +173,35 @@ const MyProperty = () => {
     else if (formData.propertyType === "Land") subTypes = proLandSubTypes;
     else if (formData.propertyType === "Commercial") subTypes = proCommercialSubTypes;
 
-    // Add location state at the top with other states
-    const [location, setLocation] = useState("");
-    const autocompleteRef = useRef(null);
-    const [showManualFields, setShowManualFields] = useState(false);
+    // Haryana Cities and Sub Districts
+    const haryanaCities = [
+        'Gurugram','Faridabad','Panipat','Ambala','Karnal','Sonipat','Hisar','Panchkula','Yamunanagar','Rohtak','Rewari','Mahendragarh','Bhiwani','Jhajjar','Jind','Kaithal','Kurukshetra','Palwal','Fatehabad','Sirsa','Charkhi Dadri','Nuh'
+    ];
+    const subDistrictsByCity = {
+        Gurugram: ['Gurgaon','Sohna','Pataudi','Manesar'],
+        Faridabad: ['Ballabgarh','Faridabad'],
+        Panipat: ['Panipat','Israna','Samalkha'],
+        Ambala: ['Ambala City','Ambala Cantt','Naraingarh'],
+        Karnal: ['Karnal','Gharaunda','Nilokheri','Indri','Assandh'],
+        Sonipat: ['Ganaur','Gohana','Kharkhoda','Sonipat'],
+        Hisar: ['Hisar','Hansi','Narnaund','Adampur'],
+        Panchkula: ['Panchkula','Kalka','Raipur Rani'],
+        Yamunanagar: ['Jagadhri','Radaur','Chhachhrauli'],
+        Rohtak: ['Rohtak','Meham','Sampla'],
+        Rewari: ['Rewari','Bawal','Kosli'],
+        Mahendragarh: ['Narnaul','Mahendragarh','Ateli'],
+        Bhiwani: ['Bhiwani','Siwani','Loharu','Tosham'],
+        Jhajjar: ['Jhajjar','Bahadurgarh','Ber i'],
+        Jind: ['Jind','Narwana','Safidon'],
+        Kaithal: ['Kaithal','Guhla','Pundri'],
+        Kurukshetra: ['Thanesar','Pehowa','Shahbad'],
+        Palwal: ['Palwal','Hathin','Hodal'],
+        Fatehabad: ['Fatehabad','Tohana','Ratia'],
+        Sirsa: ['Sirsa','Dabwali','Rania'],
+        'Charkhi Dadri': ['Charkhi Dadri','Badhra'],
+        Nuh: ['Nuh','Taoru','Punhana']
+    };
     const [change, setChange] = useState(false);
-    // Update onLoad function
-    const onLoad = (autocomplete) => {
-        autocompleteRef.current = autocomplete;
-    };
-
-    // Update onPlaceChanged function
-    const onPlaceChanged = () => {
-        if (autocompleteRef.current) {
-            const place = autocompleteRef.current.getPlace();
-            if (place && place.address_components) {
-                // Reset fields first
-                let newFormData = {
-                    ...formData,
-                    plotNumber: "",
-                    state: "",
-                    city: "",
-                    subDistrict: "",
-                    locality: "",
-                    completeAddress: "",
-                    pinCode: ""
-                };
-
-                // Map address components to fields
-                place.address_components.forEach((component) => {
-                    const types = component.types;
-
-                    // Plot Number / Street Number
-                    if (types.includes('street_number')) {
-                        newFormData.plotNumber = component.long_name;
-                    }
-                    // Street Name
-                    else if (types.includes('route')) {
-                        newFormData.plotNumber = newFormData.plotNumber 
-                            ? `${newFormData.plotNumber}, ${component.long_name}`
-                            : component.long_name;
-                    }
-                    // State
-                    else if (types.includes('administrative_area_level_1')) {
-                        newFormData.state = component.long_name;
-                    }
-                    // City
-                    else if (types.includes('locality')) {
-                        newFormData.city = component.long_name;
-                    }
-                    // Sub District
-                    else if (types.includes('administrative_area_level_2')) {
-                        newFormData.subDistrict = component.long_name;
-                    }
-                    // Locality/Area
-                    else if (types.includes('sublocality_level_1')) {
-                        newFormData.locality = component.long_name;
-                    }
-                    // Pin Code
-                    else if (types.includes('postal_code')) {
-                        newFormData.pinCode = component.long_name;
-                    }
-                });
-
-                // Set complete address
-                newFormData.completeAddress = place.formatted_address || "";
-
-                // If locality is not set but we have sublocality_level_2, use that
-                if (!newFormData.locality) {
-                    const sublocalityLevel2 = place.address_components.find(
-                        component => component.types.includes('sublocality_level_2')
-                    );
-                    if (sublocalityLevel2) {
-                        newFormData.locality = sublocalityLevel2.long_name;
-                    }
-                }
-
-                // If city is not set but we have administrative_area_level_3, use that
-                if (!newFormData.city) {
-                    const adminArea3 = place.address_components.find(
-                        component => component.types.includes('administrative_area_level_3')
-                    );
-                    if (adminArea3) {
-                        newFormData.city = adminArea3.long_name;
-                    }
-                }
-
-                // Update form data
-                setFormData(newFormData);
-
-                // Update location field
-                setLocation(place.formatted_address || "");
-
-                console.log("Place selected:", place);
-                console.log("Updated form data:", newFormData);
-            }
-        }
-    };
 
     const basicDetailsRef = useRef(null);
     const locationDetailsRef = useRef(null);
@@ -679,10 +610,7 @@ const MyProperty = () => {
     return (
         <>
         {formSubmit && <Loading />}
-            <LoadScript
-                googleMapsApiKey="AIzaSyDLzo_eOh509ONfCjn1XQp0ZM2pacPdnWc"
-                libraries={libraries}
-            >
+           
                 <div className='dashboard-main-wrapper'>
                     <div className="tab_section_wrapper">
                         <div className="tab_section">
@@ -763,7 +691,7 @@ const MyProperty = () => {
                             <label className="myproperty-label">
                                 Location Details <span style={{ color: '#ec161e' }}>*</span>
                             </label>
-                            <div className="location-input-group">
+                            {/* <div className="location-input-group">
                                 <Autocomplete
                                     onLoad={onLoad}
                                     onPlaceChanged={onPlaceChanged}
@@ -783,7 +711,7 @@ const MyProperty = () => {
                                 <div className="myproperty-location-divider">
                                     <span>Or</span>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                         <div className="auto-filled-fields">
                             <div className="myproperty-location-autofill-row">
@@ -799,38 +727,44 @@ const MyProperty = () => {
                                     {formSubmit && !formData.plotNumber && <div className="myproperty-location-error">Plot Number is required</div>}
                                 </div>
                                 <div style={{flex:1}} className='col-md-4'>
-                                    <label className="myproperty-label">State</label>
-                                    <input
-                                        type="text"
+                                    <label className="myproperty-label">State <span style={{ color: '#ec161e' }}>*</span></label>
+                                    <select
                                         className="myproperty-location-input"
-                                        placeholder="State"
                                         value={formData.state}
-                                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                                    />
+                                        onChange={(e) => setFormData({ ...formData, state: e.target.value, city: '', subDistrict: '' })}
+                                    >
+                                        <option value="Haryana">Haryana</option>
+                                    </select>
                                     {formSubmit && !formData.state && <div className="myproperty-location-error">State is required</div>}
                                 </div>
                                 <div style={{flex:1}} className='col-md-4'>
-                                    <label className="myproperty-label">City</label>
-                                    <input
-                                        type="text"
+                                    <label className="myproperty-label">City <span style={{ color: '#ec161e' }}>*</span></label>
+                                    <select
                                         className="myproperty-location-input"
-                                        placeholder="City"
                                         value={formData.city}
-                                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                    />
+                                        onChange={(e) => setFormData({ ...formData, city: e.target.value, subDistrict: '' })}
+                                    >
+                                        <option value="">Select City</option>
+                                        {haryanaCities.map((c) => (
+                                            <option key={c} value={c}>{c}</option>
+                                        ))}
+                                    </select>
                                     {formSubmit && !formData.city && <div className="myproperty-location-error">City is required</div>}
                                 </div>
                             </div>
                             <div className="myproperty-location-autofill-row">
                                 <div style={{flex:1}} className='col-md-4'>
-                                    <label className="myproperty-label">Sub District</label>
-                                    <input
-                                        type="text"
+                                    <label className="myproperty-label">Sub District <span style={{ color: '#ec161e' }}>*</span></label>
+                                    <select
                                         className="myproperty-location-input"
-                                        placeholder="Sub District"
                                         value={formData.subDistrict}
                                         onChange={(e) => setFormData({ ...formData, subDistrict: e.target.value })}
-                                    />
+                                    >
+                                        <option value="">Select Sub District</option>
+                                        {(subDistrictsByCity[formData.city] || []).map((sd) => (
+                                            <option key={sd} value={sd}>{sd}</option>
+                                        ))}
+                                    </select>
                                     {formSubmit && !formData.subDistrict && <div className="myproperty-location-error">Sub District is required</div>}
                                 </div>
                                 <div style={{flex:1}} className='col-md-4'>
@@ -1287,19 +1221,7 @@ const MyProperty = () => {
                                         ))}
                                     </div>
                                 </div>
-                                <div className="col-md-4 inside-section-wrapper">
-                                    <label className="myproperty-label">Authority Approved</label>
-                                    <div className="myproperty-pill-group">
-                                        {['HSVP', 'MC', 'DTP', 'Other'].map(opt => (
-                                            <button
-                                                key={opt}
-                                                className={`myproperty-pill${formData.authority === opt ? ' selected' : ''}`}
-                                                onClick={() => setFormData({ ...formData, authority: opt })}
-                                                type="button"
-                                            >{opt}</button>
-                                        ))}
-                                    </div>
-                                </div>
+                                
                                 {(formData.propertyType !== "Land") &&
                                 <div className="col-md-4 inside-section-wrapper">
                                     <label className="myproperty-label">Other Rooms</label>
@@ -1391,7 +1313,7 @@ const MyProperty = () => {
                         Save Changes
                     </button>
                 </div>
-            </LoadScript>
+         
             <SuccessModal 
                 open={showSuccessPopup}
                 onClose={() => {

@@ -45,7 +45,8 @@ const DashboardHeader = ({ onToggleSidebar }) => {
           </svg>
         </div>
         <div className="dashboard-heading text-capitalize" style={{ fontWeight: 700, fontSize: 28, color: '#222' }}>
-          {pageName}
+          {/* {pageName} */}
+          User Dashboard
         </div>
       </div>
       <div className="d-flex align-items-center dashboard-header-inside-right gap-3">

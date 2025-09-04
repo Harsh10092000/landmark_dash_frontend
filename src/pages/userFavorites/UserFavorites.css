@@ -1,0 +1,133 @@
+.favorites-container {
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.favorites-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.favorites-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.favorites-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 15px 15px 0 0;
+}
+
+.favorites-count {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.property-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.property-title {
+  font-size: 1rem;
+  line-height: 1.3;
+  min-height: 2.6rem;
+}
+
+.property-location {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.property-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #28a745;
+}
+
+.property-details {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.property-stats {
+  border-top: 1px solid #e9ecef;
+  padding-top: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.property-stats .col {
+  text-align: center;
+}
+
+.property-stats small {
+  font-size: 0.7rem;
+  color: #6c757d;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.property-stats span {
+  font-weight: 600;
+  color: #495057;
+}
+
+.favorite-date {
+  font-size: 0.75rem;
+  color: #adb5bd;
+  text-align: center;
+  padding-top: 0.5rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-buttons .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.btn-view {
+  background: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.btn-view:hover {
+  background: #0056b3;
+  border-color: #0056b3;
+}
+
+.btn-remove {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.btn-remove:hover {
+  background: #c82333;
+  border-color: #c82333;
+}
+
+@media (max-width: 768px) {
+  .favorites-container {
+    padding: 1rem !important;
+  }
+  
+  .property-title {
+    min-height: auto;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .action-buttons .btn {
+    width: 100%;
+  }
+}

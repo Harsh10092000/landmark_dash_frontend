@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import "./DashboardSideBar.css";
 import { Link } from "react-router-dom";
-import { AddPropertyIcon, AllProperties, MyProperties } from "../SvgIcons";
+import { AddPropertyIcon, AllProperties, MyProperties, HeartIcon } from "../SvgIcons";
 import { AuthContext } from "../../context2/AuthContext";
 
 const DashboardSideBar = ({ isSidebarOpen, toggleSidebar }) => {
@@ -150,6 +150,11 @@ const DashboardSideBar = ({ isSidebarOpen, toggleSidebar }) => {
       name: "My Properties",
       url: "/dashboard",
       icon: <MyProperties />,
+    },
+    {
+      name: "My Favorites",
+      url: "/favorites",
+      icon: <HeartIcon />,
     },
     {
       name: "Logout",

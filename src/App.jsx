@@ -3,6 +3,7 @@ import { useContext } from 'react';
 import './App.css'
 import Dashboard from './pages/dashboard/Dashboard'
 import MyProperty from './pages/myProperty/MyProperty'
+import UserFavorites from './pages/userFavorites/UserFavorites'
 import { AuthContext } from './context2/AuthContext';
 import SessionOutLoginAgain from './components/Table/SessionOutLoginAgain';
 import Loading from './components/Loading';
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
       {
         path: "my-property/:propertyId",
         element: <MyProperty />
+      },
+      {
+        path: "favorites",
+        element: <UserFavorites />
       }
     ]
   }

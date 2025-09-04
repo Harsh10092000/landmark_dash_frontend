@@ -45,7 +45,15 @@ import Loader from "../../components/loader/Loader";
 const ActionDropdownMenu1 = [
   { to: "/viewProperty", title: "View property", icon: <ViewIcon /> },
   { to: "/my-property", title: "Edit property", icon: <EditIcon /> },
-  // { to: "/editProperty", title: "Active", icon: <ListAgainIcon /> },
+  { to: "#", title: "Active", icon: <ListAgainIcon /> },
+  // { to: "/editProperty", title: "Mark as Sold", icon: <MarkIcon /> },
+  { to: "/editProperty", title: "Delete", icon: <DeleteIcon /> },
+];
+
+const ActionDropdownMenuInActive = [
+  { to: "/viewProperty", title: "View property", icon: <ViewIcon /> },
+  { to: "/my-property", title: "Edit property", icon: <EditIcon /> },
+  { to: "#", title: "Inactive", icon: <ListAgainIcon /> },
   // { to: "/editProperty", title: "Mark as Sold", icon: <MarkIcon /> },
   { to: "/editProperty", title: "Delete", icon: <DeleteIcon /> },
 ];
@@ -56,11 +64,11 @@ const ActionDropdownMenu2 = [
 ];
 
 
-const ActionBtnDropdown = ({ pro_url, pro_id, selectedItem, onAction }) => {
+const ActionBtnDropdown = ({ pro_url, pro_id, selectedItem, onAction, pro_listed }) => {
   return (
     <div className="action-dropdown css-1dhh8jv">
       <span className="css-1egvoax"></span>
-      {(pro_url == null ? ActionDropdownMenu2 : ActionDropdownMenu1).map((item) => (
+      {(pro_url == null ? ActionDropdownMenu2 : pro_listed == 1 ? ActionDropdownMenuInActive : ActionDropdownMenu1).map((item) => (
         <div
           key={item.title}
           className={`action-dropdown-item ${
@@ -383,13 +391,14 @@ const propertyCounts = useMemo(() => {
     setLoader(true);
     proListingStatus.pro_listed = 1;
     proListingStatus.pro_id = proid;
-    console.log("proid 111111 : ", proid, actionProId);
-    conflof.log("Ed");
+    console.log("proid 111111 : ", proid, actionProId, proListingStatus);
+     //conflof.log("Ed");
     await axios.put(
       import.meta.env.VITE_BACKEND + "/api/pro/updateProListingStatus",
       proListingStatus
     );
     setChange(change + 1);
+    setOpenActivate(false);
     setLoader(false);
     setSnack(true);
   };
@@ -409,7 +418,8 @@ const propertyCounts = useMemo(() => {
   // };
 
   const delistProperty = async (proid) => {
-    setOpen(false);
+
+    //setOpenDeactivate(false);
     setLoader(true);
     proListingStatus.pro_listed = 0;
     proListingStatus.pro_id = proid;
@@ -418,6 +428,7 @@ const propertyCounts = useMemo(() => {
       proListingStatus
     );
     setChange(change + 1);
+    setOpenDeactivate(false);
     setLoader(false);
     setSnackQ(true);
   };
@@ -455,7 +466,12 @@ const propertyCounts = useMemo(() => {
           // );
           // setChange(change + 1);
           // setSnack(true);
+          setActionProId(pro_id);
           handleOpenActivate()
+          break;
+        case "Inactive":
+          setActionProId(pro_id);
+          handleOpenDeactivate()
           break;
         case "Mark as Sold":
           await axios.put(
@@ -489,16 +505,16 @@ const propertyCounts = useMemo(() => {
   const [actionProId, setActionProId] = useState(null)
 
   const handleOpenActivate = () => setOpenActivate(true);
-  const handleCloseActivate = () => setOpenActivate(false);
+  const handleCloseActivate = () => { setLoader(false); setOpenActivate(false); setActionProId(null); }
 
   const handleOpenDeactivate = () => setOpenDeactivate(true);
-  const handleCloseDeactivate = () => setOpenDeactivate(false);
+  const handleCloseDeactivate = () => { setLoader(false); setOpenDeactivate(false); setActionProId(null); }
 
   const handleOpenMarkSold = () => setOpenMarkSold(true);
-  const handleCloseMarkSold = () => setOpenMarkSold(false);
+  const handleCloseMarkSold = () => { setLoader(false); setOpenMarkSold(false); setActionProId(null); }
 
   const handleOpenMarkNotSold = () => setOpenMarkNotSold(true);
-  const handleCloseMarkNotSold = () => setOpenMarkNotSold(false);
+  const handleCloseMarkNotSold = () => { setLoader(false); setOpenMarkNotSold(false); setActionProId(null); } 
 
   // Sorting function
   const handleSort = (field) => {
@@ -530,7 +546,7 @@ const propertyCounts = useMemo(() => {
       <PropertyStatusDialog
         open={openDeactivate}
         handleClose={handleCloseDeactivate}
-        onClickFunction={() => delistProperty}
+        onClickFunction={() => delistProperty(actionProId)}
         heading="Deactivate Property"
         content="Are you sure you want to deactivate this property? It will be hidden from everyone."
         actionButtonText="Deactivate"
@@ -572,7 +588,7 @@ const propertyCounts = useMemo(() => {
         onClose={() => setSnackDel(false)}
         message={"Deleted Successfully"}
       />
-      <Dialog
+      {/* <Dialog
         open={open}
         onClose={handleClose}
         aria-labelledby="alert-dialog-title"
@@ -592,7 +608,7 @@ const propertyCounts = useMemo(() => {
             Delist
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
       {loader ? <Loader /> : ""}
       <Snackbar
         ContentProps={{
@@ -718,6 +734,7 @@ const propertyCounts = useMemo(() => {
                       pro_id={item.pro_id}
                       selectedItem={selectedItem}
                       onAction={handleAction}
+                      pro_listed={item.pro_listed}
                     />
                   )}
                 </div>
